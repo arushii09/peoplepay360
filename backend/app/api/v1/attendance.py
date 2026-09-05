@@ -1,6 +1,6 @@
 from datetime import date
 from typing import List, Optional
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, Query, status, HTTPException
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user, require_roles
@@ -25,7 +25,16 @@ def list_attendances(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """List attendance records with optional filtering."""
+    if current_user.role==UserRole.EMPLOYEE:
+        if not current_user.employee:
+            raise HTTPException(
+                status_code=status.HTTP_400v_BAD_REQUEST,
+                detail="User account is not linked to an emplopyee profile",
+            )
+        employee_id=current_user.employee.id
+
+
+    
     return attendance_service.list_attendances(
         db=db,
         employee_id=employee_id,

@@ -20,9 +20,9 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.session import Base
 
 
-# ==========================================
-# 1. DOMAIN ENUMS
-# ==========================================
+
+# 1 domain enums
+
 
 class UserRole(str, PyEnum):
     EMPLOYEE = "EMPLOYEE"
@@ -64,9 +64,6 @@ class RuleCategory(str, PyEnum):
 class ComputationType(str, PyEnum):
     FIXED = "FIXED"
     PERCENTAGE = "PERCENTAGE"
-    # Rules are evaluated in sequence; later rules may depend on earlier results.
-    # OVERTIME and LEAVE_DEDUCTION are explicit types so the engine knows exactly
-    # how to calculate them without parsing a formula string.
     OVERTIME = "OVERTIME"
     LEAVE_DEDUCTION = "LEAVE_DEDUCTION"
     PYTHON_EXPRESSION = "PYTHON_EXPRESSION"
@@ -79,33 +76,33 @@ class PayrunStatus(str, PyEnum):
     PAID = "PAID"
 
 
-# ==========================================
-# 2. HR MASTER DATA MODELS (BE-1)
-# ==========================================
+
+
+
+# 2. hr master data models
+
 
 class User(Base):
     """
-    User model for authentication and system access.
+    User model 
     Stores login credentials and role privileges.
     """
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    # Index on email speeds up lookup queries during login
+    
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
     full_name: Mapped[str] = mapped_column(String(255), nullable=False)
     role: Mapped[UserRole] = mapped_column(Enum(UserRole), default=UserRole.EMPLOYEE, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
-
-    # 1-to-1 relationship with Employee profile (uselist=False enforces 1-to-1 mapping)
     employee: Mapped[Optional["Employee"]] = relationship("Employee", back_populates="user", uselist=False)
 
 
 class WorkingSchedule(Base):
     """
-    Defines working hours and daily patterns (e.g. 40h Mon-Fri).
+    Defines working hours and daily patterns
     """
     __tablename__ = "working_schedules"
 
@@ -113,22 +110,17 @@ class WorkingSchedule(Base):
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     schedule_type: Mapped[str] = mapped_column(String(100), default="FULL_TIME", nullable=False)
     weekly_hours: Mapped[float] = mapped_column(Float, default=40.0, nullable=False)
-    # Stores weekday breakdown JSON: start, end, break hours per day
     pattern_json: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
-
-    # Employees assigned to this work schedule
     employees: Mapped[List["Employee"]] = relationship("Employee", back_populates="schedule")
 
 
 class Employee(Base):
     """
     Central HR Employee profile.
-    Connects users to contracts, attendance records, leaves, and payslips.
     """
     __tablename__ = "employees"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    # Foreign key to User account (nullable for external/contract employees without login)
     user_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), unique=True, nullable=True)
     first_name: Mapped[str] = mapped_column(String(255), nullable=False)
     last_name: Mapped[str] = mapped_column(String(255), nullable=False)
@@ -136,13 +128,9 @@ class Employee(Base):
     phone: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
     department: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     job_position: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
-    
-    # Self-referencing foreign key for org hierarchy (manager -> subordinates)
     manager_id: Mapped[Optional[int]] = mapped_column(ForeignKey("employees.id"), nullable=True)
     schedule_id: Mapped[Optional[int]] = mapped_column(ForeignKey("working_schedules.id"), nullable=True)
     status: Mapped[str] = mapped_column(String(50), default="ACTIVE", nullable=False)
-    
-    # Financial & Tax details required for payroll validation
     bank_account_no: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     bank_name: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     ifsc_code: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
@@ -151,12 +139,8 @@ class Employee(Base):
     # Relationships
     user: Mapped[Optional["User"]] = relationship("User", back_populates="employee")
     schedule: Mapped[Optional["WorkingSchedule"]] = relationship("WorkingSchedule", back_populates="employees")
-    
-    # remote_side=[id] tells SQLAlchemy manager_id points to another Employee instance in self-referencing hierarchy
     manager: Mapped[Optional["Employee"]] = relationship("Employee", remote_side=[id], back_populates="subordinates")
     subordinates: Mapped[List["Employee"]] = relationship("Employee", back_populates="manager")
-
-    # cascade="all, delete-orphan" automatically cleans up child records when an employee is deleted to prevent orphan rows
     contracts: Mapped[List["Contract"]] = relationship("Contract", back_populates="employee", cascade="all, delete-orphan")
     attendances: Mapped[List["Attendance"]] = relationship("Attendance", back_populates="employee", cascade="all, delete-orphan")
     leave_allocations: Mapped[List["LeaveAllocation"]] = relationship("LeaveAllocation", back_populates="employee", cascade="all, delete-orphan")
@@ -182,7 +166,7 @@ class TimeOffType(Base):
 
 class LeaveAllocation(Base):
     """
-    Annual leave allowance allocated to an employee for a specific leave type.
+    Annual leave allowance 
     """
     __tablename__ = "leave_allocations"
 
@@ -199,7 +183,7 @@ class LeaveAllocation(Base):
 
 class TimeOffRequest(Base):
     """
-    Employee leave applications submitted for approval.
+    Employee leave applicationsfor approval.
     """
     __tablename__ = "time_off_requests"
 
@@ -218,7 +202,7 @@ class TimeOffRequest(Base):
 
 class Attendance(Base):
     """
-    Daily check-in and check-out tracking for work and overtime hours.
+    Daily check-in and check-out
     """
     __tablename__ = "attendances"
 
@@ -235,13 +219,11 @@ class Attendance(Base):
     employee: Mapped["Employee"] = relationship("Employee", back_populates="attendances")
 
 
-# ==========================================
-# 3. PAYROLL ENGINE MODELS (BE-2)
-# ==========================================
+
 
 class SalaryStructure(Base):
     """
-    Defines a salary template (e.g. CORP_EXEC_2026) containing ordered calculation rules.
+    Defines a salary template
     """
     __tablename__ = "salary_structures"
 
@@ -253,7 +235,6 @@ class SalaryStructure(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
-    # Order rules by sequence number during retrieval (e.g. BASIC=10, HRA=20, GROSS=40, PF=50, NET=100)
     rules: Mapped[List["SalaryRule"]] = relationship(
         "SalaryRule",
         back_populates="structure",
@@ -266,7 +247,7 @@ class SalaryStructure(Base):
 
 class SalaryRule(Base):
     """
-    Individual pay components (e.g. BASIC, HRA, PF) computed sequentially using Python expressions.
+    Individual pay components
     """
     __tablename__ = "salary_rules"
 
@@ -281,13 +262,11 @@ class SalaryRule(Base):
         default=ComputationType.PYTHON_EXPRESSION,
         nullable=False
     )
-    # Numeric(12, 4) instead of Float: avoids floating-point rounding errors.
-    # Example: 6000.0 * 0.20 in Float = 1199.9999999999998. Numeric = exact 1200.0000.
-    # fixed_amount is used as: the flat value (FIXED), or the multiplier (OVERTIME, e.g. 1.5x).
     fixed_amount: Mapped[Optional[float]] = mapped_column(Numeric(12, 4), nullable=True)
     percentage_value: Mapped[Optional[float]] = mapped_column(Numeric(12, 4), nullable=True)
     formula: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    appear_on_payslip:Mapped[bool]=mapped_column(Boolean, default=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
@@ -313,7 +292,7 @@ class Contract(Base):
 
 class Payrun(Base):
     """
-    Monthly payroll processing batch containing payslips for all eligible employees.
+    Monthly payroll
     """
     __tablename__ = "payruns"
 
@@ -334,7 +313,7 @@ class Payrun(Base):
 
 class Payslip(Base):
     """
-    Individual payslip generated for an employee during a payrun batch.
+    Individual payslip generated for an employee
     """
     __tablename__ = "payslips"
 
@@ -351,8 +330,6 @@ class Payslip(Base):
     gross_wage: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
     total_deductions: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
     net_wage: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
-    
-    # Stores validation alerts (e.g. missing bank account or tax ID) as JSON
     warnings_json: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
 
     payrun: Mapped["Payrun"] = relationship("Payrun", back_populates="payslips")
@@ -368,7 +345,7 @@ class Payslip(Base):
 
 class PayslipLine(Base):
     """
-    Detailed breakdown line item on a payslip showing rate, amount, and calculation trace.
+    Detailed breakdown line item on a payslip
     """
     __tablename__ = "payslip_lines"
 

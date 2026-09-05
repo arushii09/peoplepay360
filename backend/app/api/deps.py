@@ -8,7 +8,7 @@ from app.core.config import settings
 from app.db.session import get_db
 from app.models.models import User, UserRole
 
-# OAuth2Bearer scheme automatically extracts the token from HTTP request header "Authorization: Bearer <token>"
+
 oauth2_scheme = OAuth2PasswordBearer(
     tokenUrl=f"{settings.API_V1_STR}/auth/login"
 )
@@ -28,7 +28,7 @@ def get_current_user(
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        # Decode and verify JWT signature using application secret key
+        
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         email: str = payload.get("sub")
         if email is None:
@@ -36,7 +36,7 @@ def get_current_user(
     except JWTError:
         raise credentials_exception
 
-    # Query database for target user
+    
     user = db.query(User).filter(User.email == email).first()
     if user is None:
         raise credentials_exception
@@ -49,10 +49,7 @@ def get_current_user(
 
 
 def require_roles(allowed_roles: List[UserRole]):
-    """
-    Dependency factory enforcing Role-Based Access Control (RBAC).
-    Usage: Depends(require_roles([UserRole.ADMIN, UserRole.HR_MANAGER]))
-    """
+    
     def role_checker(current_user: User = Depends(get_current_user)) -> User:
         if current_user.role not in allowed_roles:
             raise HTTPException(
