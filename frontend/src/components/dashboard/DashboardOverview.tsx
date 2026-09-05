@@ -13,11 +13,18 @@ import {
   Plus,
   Clock,
   FileText,
-  ShieldCheck,
-  TrendingUp,
-  X,
   Check
 } from "lucide-react";
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  Legend
+} from "recharts";
 
 interface DashboardOverviewProps {
   onNavigate: (navId: string) => void;
@@ -34,7 +41,6 @@ const PAYROLL_TREND_DATA = [
 
 export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
   onNavigate,
-  onSelectEmployee,
 }) => {
   const [mounted, setMounted] = useState(false);
   const [selectedPeriod, setSelectedPeriod] = useState("September 2026");
@@ -178,7 +184,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
         </div>
       </div>
 
-      {/* 3. Row 2: Payroll Overview (Recharts) & Quick Actions matching wireframe */}
+      {/* 3. Row 2: Payroll Overview (Recharts) & Quick Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Payroll Overview Chart (Col 8) */}
         <div className="lg:col-span-8 p-6 rounded-xl border border-[#E8F3E6] bg-[#FFFFFF]">
@@ -196,39 +202,35 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
             </span>
           </div>
 
-          <div className="h-64 mt-4 w-full flex flex-col justify-between">
-            <div className="flex-1 flex items-end justify-between gap-4 pb-4 border-b border-[#E8F3E6]">
-              {PAYROLL_TREND_DATA.map((item) => (
-                <div key={item.month} className="flex-1 flex flex-col items-center h-full justify-end group">
-                  <div className="text-[10px] text-[#5C645C] opacity-0 group-hover:opacity-100 transition-opacity mb-1 font-mono">
-                    ₹{item.gross}L / ₹{item.net}L
-                  </div>
-                  <div className="w-full flex items-end justify-center gap-1.5 h-44">
-                    <div
-                      className="w-4 bg-[#0F2F1E] rounded-t transition-all hover:brightness-110"
-                      style={{ height: `${(item.gross / 25) * 100}%` }}
-                      title={`Gross: ₹${item.gross}L`}
-                    />
-                    <div
-                      className="w-4 bg-[#9FD067] rounded-t transition-all hover:brightness-110"
-                      style={{ height: `${(item.net / 25) * 100}%` }}
-                      title={`Net: ₹${item.net}L`}
-                    />
-                  </div>
-                  <span className="text-xs text-[#5C645C] mt-2 font-medium">{item.month}</span>
-                </div>
-              ))}
-            </div>
-            <div className="flex items-center justify-center gap-6 pt-3 text-xs text-[#5C645C]">
-              <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-sm bg-[#0F2F1E]" />
-                <span>Gross Pay</span>
+          <div className="h-64 mt-4 w-full">
+            {mounted ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={PAYROLL_TREND_DATA} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#E8F3E6" vertical={false} />
+                  <XAxis dataKey="month" stroke="#5C645C" fontSize={11} tickLine={false} />
+                  <YAxis stroke="#5C645C" fontSize={11} tickLine={false} unit="L" />
+                  <Tooltip
+                    formatter={(value: any) => [`₹${value} Lakhs`, ""]}
+                    contentStyle={{
+                      backgroundColor: "#FFFFFF",
+                      borderColor: "#CBD2C4",
+                      borderRadius: "8px",
+                      fontSize: "12px",
+                      color: "#1A1A1A",
+                    }}
+                  />
+                  <Legend
+                    wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }}
+                  />
+                  <Bar dataKey="gross" name="Gross Pay" fill="#0F2F1E" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="net" name="Net Disbursed" fill="#9FD067" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-full flex items-center justify-center text-xs text-[#5C645C]">
+                Loading trend visualization...
               </div>
-              <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-sm bg-[#9FD067]" />
-                <span>Net Disbursed</span>
-              </div>
-            </div>
+            )}
           </div>
         </div>
 
@@ -249,7 +251,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                 type="button"
                 suppressHydrationWarning
                 onClick={() => onNavigate("employees")}
-                className="w-full flex items-center justify-between p-3 rounded-lg border border-[#E8F3E6] bg-[#F6F7F2] hover:bg-[#E7E9E1] transition-colors text-xs font-semibold text-[#0F2F1E]"
+                className="w-full flex items-center justify-between p-3 rounded-lg border border-[#E8F3E6] bg-[#F6F7F2] hover:bg-[#E7E9E1] transition-colors text-xs font-semibold text-[#0F2F1E] cursor-pointer"
               >
                 <div className="flex items-center gap-2.5">
                   <Plus className="w-4 h-4 text-[#2E6845]" />
@@ -262,7 +264,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                 type="button"
                 suppressHydrationWarning
                 onClick={() => onNavigate("attendance")}
-                className="w-full flex items-center justify-between p-3 rounded-lg border border-[#E8F3E6] bg-[#F6F7F2] hover:bg-[#E7E9E1] transition-colors text-xs font-semibold text-[#0F2F1E]"
+                className="w-full flex items-center justify-between p-3 rounded-lg border border-[#E8F3E6] bg-[#F6F7F2] hover:bg-[#E7E9E1] transition-colors text-xs font-semibold text-[#0F2F1E] cursor-pointer"
               >
                 <div className="flex items-center gap-2.5">
                   <Clock className="w-4 h-4 text-[#2E6845]" />
@@ -275,7 +277,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                 type="button"
                 suppressHydrationWarning
                 onClick={() => onNavigate("time-off")}
-                className="w-full flex items-center justify-between p-3 rounded-lg border border-[#E8F3E6] bg-[#F6F7F2] hover:bg-[#E7E9E1] transition-colors text-xs font-semibold text-[#0F2F1E]"
+                className="w-full flex items-center justify-between p-3 rounded-lg border border-[#E8F3E6] bg-[#F6F7F2] hover:bg-[#E7E9E1] transition-colors text-xs font-semibold text-[#0F2F1E] cursor-pointer"
               >
                 <div className="flex items-center gap-2.5">
                   <Calendar className="w-4 h-4 text-[#2E6845]" />
@@ -290,7 +292,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                 type="button"
                 suppressHydrationWarning
                 onClick={() => onNavigate("payroll")}
-                className="w-full flex items-center justify-between p-3 rounded-lg border border-[#0F2F1E] bg-[#0F2F1E] text-white hover:bg-[#1F4D32] transition-colors text-xs font-semibold"
+                className="w-full flex items-center justify-between p-3 rounded-lg border border-[#0F2F1E] bg-[#0F2F1E] text-white hover:bg-[#1F4D32] transition-colors text-xs font-semibold cursor-pointer"
               >
                 <div className="flex items-center gap-2.5">
                   <Calculator className="w-4 h-4 text-[#9FD067]" />
@@ -326,7 +328,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
               setActiveWorkflowStep(1);
               setReviewModalOpen(true);
             }}
-            className="px-5 py-2.5 rounded-lg bg-[#0F2F1E] text-white text-xs font-semibold hover:bg-[#1F4D32] transition-colors self-start sm:self-auto"
+            className="px-5 py-2.5 rounded-lg bg-[#0F2F1E] text-white text-xs font-semibold hover:bg-[#1F4D32] transition-colors self-start sm:self-auto cursor-pointer"
           >
             Review Payrun →
           </button>
@@ -429,7 +431,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                       setReviewModalOpen(true);
                       setActiveWorkflowStep(2);
                     }}
-                    className="px-3.5 py-1.5 rounded-lg bg-[#E7E9E1] text-[#0F2F1E] text-xs font-semibold hover:bg-[#CBD2C4] border border-[#CBD2C4] transition-colors"
+                    className="px-3.5 py-1.5 rounded-lg bg-[#E7E9E1] text-[#0F2F1E] text-xs font-semibold hover:bg-[#CBD2C4] border border-[#CBD2C4] transition-colors cursor-pointer"
                   >
                     Review
                   </button>
@@ -452,7 +454,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
               type="button"
               suppressHydrationWarning
               onClick={() => onNavigate("payroll")}
-              className="text-xs font-semibold text-[#0F2F1E] hover:underline"
+              className="text-xs font-semibold text-[#0F2F1E] hover:underline cursor-pointer"
             >
               View All
             </button>
@@ -563,7 +565,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                 type="button"
                 suppressHydrationWarning
                 onClick={() => setReviewModalOpen(false)}
-                className="w-8 h-8 flex items-center justify-center rounded-lg bg-[#E7E9E1] text-[#1A1A1A] hover:bg-[#CBD2C4] text-xs font-semibold"
+                className="w-8 h-8 flex items-center justify-center rounded-lg bg-[#E7E9E1] text-[#1A1A1A] hover:bg-[#CBD2C4] text-xs font-semibold cursor-pointer"
               >
                 ✕
               </button>
@@ -634,7 +636,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                     type="button"
                     suppressHydrationWarning
                     onClick={() => setActiveWorkflowStep(2)}
-                    className="px-5 py-2.5 rounded-lg bg-[#0F2F1E] text-white text-xs font-semibold hover:bg-[#1F4D32]"
+                    className="px-5 py-2.5 rounded-lg bg-[#0F2F1E] text-white text-xs font-semibold hover:bg-[#1F4D32] cursor-pointer"
                   >
                     Proceed to Fix Warnings →
                   </button>
@@ -667,7 +669,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                           type="button"
                           suppressHydrationWarning
                           onClick={() => handleResolveWarning(warn.id)}
-                          className="px-3 py-1.5 rounded-lg bg-[#0F2F1E] text-white text-xs font-semibold hover:bg-[#1F4D32]"
+                          className="px-3 py-1.5 rounded-lg bg-[#0F2F1E] text-white text-xs font-semibold hover:bg-[#1F4D32] cursor-pointer"
                         >
                           {warn.actionLabel}
                         </button>
@@ -680,7 +682,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                     type="button"
                     suppressHydrationWarning
                     onClick={() => setActiveWorkflowStep(1)}
-                    className="px-4 py-2 rounded-lg bg-[#E7E9E1] text-[#1A1A1A] text-xs font-semibold"
+                    className="px-4 py-2 rounded-lg bg-[#E7E9E1] text-[#1A1A1A] text-xs font-semibold cursor-pointer"
                   >
                     ← Back
                   </button>
@@ -689,7 +691,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                     suppressHydrationWarning
                     disabled={!allWarningsResolved}
                     onClick={() => setActiveWorkflowStep(3)}
-                    className={`px-5 py-2.5 rounded-lg text-xs font-semibold transition-colors ${
+                    className={`px-5 py-2.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
                       allWarningsResolved
                         ? "bg-[#0F2F1E] text-white hover:bg-[#1F4D32]"
                         : "bg-[#E7E9E1] text-[#9AA29A] cursor-not-allowed"
@@ -720,7 +722,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                     type="button"
                     suppressHydrationWarning
                     onClick={() => setActiveWorkflowStep(2)}
-                    className="px-4 py-2 rounded-lg bg-[#E7E9E1] text-[#1A1A1A] text-xs font-semibold"
+                    className="px-4 py-2 rounded-lg bg-[#E7E9E1] text-[#1A1A1A] text-xs font-semibold cursor-pointer"
                   >
                     ← Back
                   </button>
@@ -728,7 +730,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                     type="button"
                     suppressHydrationWarning
                     onClick={() => setActiveWorkflowStep(4)}
-                    className="px-5 py-2.5 rounded-lg bg-[#0F2F1E] text-white text-xs font-semibold hover:bg-[#1F4D32]"
+                    className="px-5 py-2.5 rounded-lg bg-[#0F2F1E] text-white text-xs font-semibold hover:bg-[#1F4D32] cursor-pointer"
                   >
                     Generate Final Payslips →
                   </button>
@@ -790,7 +792,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                       setReviewModalOpen(false);
                       setActiveWorkflowStep(1);
                     }}
-                    className="px-4 py-2 rounded-lg bg-[#E7E9E1] text-[#1A1A1A] text-xs font-semibold"
+                    className="px-4 py-2 rounded-lg bg-[#E7E9E1] text-[#1A1A1A] text-xs font-semibold cursor-pointer"
                   >
                     Done
                   </button>
@@ -801,7 +803,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                       setReviewModalOpen(false);
                       onNavigate("payroll");
                     }}
-                    className="px-5 py-2.5 rounded-lg bg-[#0F2F1E] text-white text-xs font-semibold hover:bg-[#1F4D32]"
+                    className="px-5 py-2.5 rounded-lg bg-[#0F2F1E] text-white text-xs font-semibold hover:bg-[#1F4D32] cursor-pointer"
                   >
                     Open Full Payroll Engine →
                   </button>

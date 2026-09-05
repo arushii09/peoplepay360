@@ -1,22 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
-import { Employee, Contract } from "@/types/hr";
+import { Employee } from "@/types/hr";
 import {
   ArrowLeft,
   Mail,
   Phone,
-  Building2,
-  Briefcase,
   Calendar,
   CreditCard,
-  ShieldCheck,
   Clock,
-  FileText,
-  DollarSign,
-  CheckCircle2,
-  AlertCircle,
-  Plus,
   Edit2,
   Check,
   X

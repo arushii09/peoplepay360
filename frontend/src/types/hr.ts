@@ -78,34 +78,96 @@ export interface TimeOffType {
   requires_allocation: boolean;
 }
 
+export type PayrunStatus = "DRAFT" | "COMPUTED" | "VALIDATED" | "PAID" | string;
 export type PayslipStatus = "DRAFT" | "COMPUTED" | "VALIDATED" | "PAID" | string;
+
+export interface PayslipLine {
+  id: number;
+  payslip_id: number;
+  rule_code: string;
+  rule_name: string;
+  category: RuleCategory;
+  sequence: number;
+  rate: number;
+  amount: number;
+  calculation_trace?: string | null;
+}
 
 export interface Payslip {
   id: number;
   payrun_id: number;
   payrun_name?: string;
+  employee_id?: number;
+  employee_name?: string;
+  employee_avatar?: string;
+  employee_department?: string;
+  employee_job?: string;
+  contract_id?: number;
+  contract_wage?: number;
   period_start: string;
   period_end: string;
+  worked_days?: number;
+  total_hours?: number;
+  overtime_hours?: number;
+  unpaid_leave_days?: number;
   basic_wage: number;
   gross_wage: number;
   total_deductions: number;
   net_wage: number;
   status: PayslipStatus;
   warnings?: string[] | null;
+  blocking_errors?: string[] | null;
+  lines?: PayslipLine[];
 }
+
+export interface Payrun {
+  id: number;
+  name: string;
+  period_start: string;
+  period_end: string;
+  salary_structure_id: number;
+  salary_structure_name?: string;
+  status: PayrunStatus;
+  total_gross: number;
+  total_deductions: number;
+  total_net: number;
+  employee_count: number;
+  warnings_count?: number;
+  blocking_errors_count?: number;
+  created_at: string;
+  payslips?: Payslip[];
+}
+
+export type ComputationType =
+  | "FIXED"
+  | "PERCENTAGE"
+  | "OVERTIME"
+  | "LEAVE_DEDUCTION"
+  | "PYTHON_EXPRESSION"
+  | string;
+
+export type RuleCategory =
+  | "BASIC"
+  | "ALLOWANCE"
+  | "GROSS"
+  | "DEDUCTION"
+  | "NET"
+  | "STATUTORY"
+  | string;
 
 export interface SalaryRule {
   id: number;
   structure_id: number;
   name: string;
   code: string;
-  category: "BASIC" | "ALLOWANCE" | "GROSS" | "DEDUCTION" | "NET" | string;
+  category: RuleCategory;
   sequence: number;
-  computation_type: "FIXED" | "PERCENTAGE" | "PYTHON_EXPRESSION" | string;
+  computation_type: ComputationType;
   fixed_amount?: number | null;
   percentage_value?: number | null;
   formula?: string | null;
   is_active: boolean;
+  description?: string | null;
 }
 
 export interface SalaryStructure {
@@ -115,6 +177,9 @@ export interface SalaryStructure {
   description?: string | null;
   is_active: boolean;
   rules?: SalaryRule[];
+  assigned_contracts_count?: number;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface Employee {

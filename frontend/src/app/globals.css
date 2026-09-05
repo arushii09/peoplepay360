@@ -3,6 +3,14 @@
 :root {
   --background: #F6F7F2;
   --foreground: #1A1A1A;
+  --primary: #0F2F1E;
+  --primary-dark: #1F4D32;
+  --accent: #2E6845;
+  --accent-light: #9FD067;
+  --surface: #E7E9E1;
+  --text-secondary: #5C645C;
+  --card: #FFFFFF;
+  --border: #E8F3E6;
   --color-primary: #0F2F1E;
   --color-primary-dark: #1F4D32;
   --color-accent: #2E6845;
@@ -17,6 +25,14 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-solar-primary: #0F2F1E;
+  --color-solar-dark: #1F4D32;
+  --color-solar-accent: #2E6845;
+  --color-solar-accent-light: #9FD067;
+  --color-solar-surface: #E7E9E1;
+  --color-solar-muted: #9AA29A;
+  --color-solar-card: #FFFFFF;
+  --color-solar-border: #E8F3E6;
   --font-sans: var(--font-dm-sans), system-ui, -apple-system, sans-serif;
   --font-serif: var(--font-fraunces), Georgia, serif;
 }

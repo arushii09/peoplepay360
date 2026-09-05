@@ -16,8 +16,8 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
-  title: "PeoplePay360 - Connected HR & Explainable Payroll Platform",
-  description: "Integrated HR and Payroll System with deterministic rule calculation.",
+  title: "PeoplePay360 | Connected HR & Explainable Payroll Platform",
+  description: "Unified employee lifecycle, active contracts, attendance tracking, and deterministic payroll calculation.",
 };
 
 export default function RootLayout({

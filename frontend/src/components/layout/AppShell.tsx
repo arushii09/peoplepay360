@@ -8,7 +8,6 @@ import {
   Clock,
   Calendar,
   Calculator,
-  ShieldCheck,
   Bell,
   CheckCircle2,
   ChevronRight,
@@ -16,9 +15,9 @@ import {
   Menu,
   X,
   UserCheck,
-  Sliders,
-  Settings,
-  Shield
+  Shield,
+  Layers,
+  Code2
 } from "lucide-react";
 import { UserRole } from "@/components/auth/AuthView";
 
@@ -40,7 +39,6 @@ export const AppShell: React.FC<AppShellProps> = ({
   activeNav,
   onNavigate,
   title,
-  subtitle,
   breadcrumbs,
   currentUserRole = "hr_manager",
   currentUserName = "Elena Rostova",
@@ -108,7 +106,10 @@ export const AppShell: React.FC<AppShellProps> = ({
         {
           group: "Payroll Processing",
           items: [
-            { id: "payroll", label: "Payruns & Payslips", icon: Calculator, badge: "CRU Access" }
+            { id: "payroll-dashboard", label: "Payroll Dashboard", icon: LayoutDashboard, badge: "6 Insights" },
+            { id: "salary-structures", label: "Salary Structures", icon: Layers, badge: "Row 2" },
+            { id: "salary-rules", label: "Salary Rules", icon: Code2, badge: "Row 3" },
+            { id: "payruns", label: "Payruns & Wizard", icon: Calculator, badge: "Row 4-5" }
           ]
         }
       ];
@@ -135,7 +136,10 @@ export const AppShell: React.FC<AppShellProps> = ({
         {
           group: "Payroll Engine (Full Control)",
           items: [
-            { id: "payroll", label: "Payroll Engine & Trace", icon: Calculator, badge: "Full CRUD" }
+            { id: "payroll-dashboard", label: "Payroll Dashboard", icon: LayoutDashboard, badge: "6 Insights" },
+            { id: "salary-structures", label: "Salary Structures", icon: Layers, badge: "Row 2" },
+            { id: "salary-rules", label: "Salary Rules", icon: Code2, badge: "Row 3" },
+            { id: "payruns", label: "Payruns & Wizard", icon: Calculator, badge: "Row 4-5" }
           ]
         }
       ];
@@ -161,7 +165,10 @@ export const AppShell: React.FC<AppShellProps> = ({
       {
         group: "Payroll Engine (Full Access)",
         items: [
-          { id: "payroll", label: "Payroll Engine & Trace", icon: Calculator, badge: "Full Access" }
+          { id: "payroll-dashboard", label: "Payroll Dashboard", icon: LayoutDashboard, badge: "6 Insights" },
+          { id: "salary-structures", label: "Salary Structures", icon: Layers, badge: "Row 2" },
+          { id: "salary-rules", label: "Salary Rules", icon: Code2, badge: "Row 3" },
+          { id: "payruns", label: "Payruns & Wizard", icon: Calculator, badge: "Row 4-5" }
         ]
       },
       {

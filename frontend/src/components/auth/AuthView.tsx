@@ -6,18 +6,9 @@ import {
   ArrowLeft,
   Mail,
   Lock,
-  UserCheck,
-  Calculator,
-  Users,
-  CheckCircle2,
-  ChevronRight,
   ArrowRight,
-  Sparkles,
-  Settings,
-  Shield,
-  FileText
+  CheckCircle2
 } from "lucide-react";
-import { login, getCurrentUser } from "@/lib/api";
 
 export type UserRole =
   | "employee"
@@ -44,7 +35,6 @@ export const DEMO_PERSONAS: {
   role: UserRole;
   name: string;
   email: string;
-  password: string;
   title: string;
   badge: string;
   employeeId?: number;
@@ -55,22 +45,20 @@ export const DEMO_PERSONAS: {
 }[] = [
   {
     role: "employee",
-    name: "Alex Vance",
-    email: "alex@peoplepay.com",
-    password: "employee123",
-    title: "Software Engineer (EMP001)",
+    name: "Aarav Mehta",
+    email: "aarav.mehta@peoplepay.com",
+    title: "Platform Engineer (EMP-101)",
     badge: "Employee",
-    employeeId: 1,
+    employeeId: 3,
     initialNav: "my-profile",
     scope: "Own details, punches & leave requests (No HR/payroll access)",
     avatarColor: "bg-amber-100 text-amber-800 border-amber-300",
-    avatarText: "AV"
+    avatarText: "EM"
   },
   {
     role: "hr_manager",
     name: "Elena Rostova",
-    email: "hr@peoplepay.com",
-    password: "hr123",
+    email: "hr.manager@peoplepay.com",
     title: "HR Manager",
     badge: "HR Manager",
     initialNav: "dashboard",
@@ -81,8 +69,7 @@ export const DEMO_PERSONAS: {
   {
     role: "hr_payroll_user",
     name: "Maya Lin",
-    email: "payroll@peoplepay.com",
-    password: "payroll123",
+    email: "payroll.user@peoplepay.com",
     title: "HR Payroll Specialist",
     badge: "HR Payroll User",
     initialNav: "payroll",
@@ -93,8 +80,7 @@ export const DEMO_PERSONAS: {
   {
     role: "hr_payroll_manager",
     name: "Marcus Vance",
-    email: "payroll@peoplepay.com",
-    password: "payroll123",
+    email: "payroll.manager@peoplepay.com",
     title: "HR & Payroll Director",
     badge: "HR Payroll Manager",
     initialNav: "payroll",
@@ -104,9 +90,8 @@ export const DEMO_PERSONAS: {
   },
   {
     role: "admin",
-    name: "System Admin",
+    name: "Sarah Jenkins",
     email: "admin@peoplepay.com",
-    password: "admin123",
     title: "Global System Administrator",
     badge: "Admin",
     initialNav: "dashboard",
@@ -123,8 +108,8 @@ export const AuthView: React.FC<AuthViewProps> = ({
 }) => {
   const [authMode, setAuthMode] = useState<"signin" | "signup">(initialMode);
   const [selectedRole, setSelectedRole] = useState<UserRole>("hr_manager");
-  const [email, setEmail] = useState("hr@peoplepay.com");
-  const [password, setPassword] = useState("hr123");
+  const [email, setEmail] = useState("hr.manager@peoplepay.com");
+  const [password, setPassword] = useState("••••••••••••");
   const [name, setName] = useState("Elena Rostova");
   const [validationError, setValidationError] = useState("");
 
@@ -132,69 +117,44 @@ export const AuthView: React.FC<AuthViewProps> = ({
     setSelectedRole(persona.role);
     setEmail(persona.email);
     setName(persona.name);
-    setPassword(persona.password);
+    setPassword("••••••••••••");
     setValidationError("");
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !password.trim()) {
       setValidationError("Please provide both email and password.");
       return;
     }
 
-    try {
-      setValidationError("");
-      await login(email, password);
-      const user = await getCurrentUser();
-
-      const roleMap: Record<string, UserRole> = {
-        ADMIN: "admin",
-        HR_MANAGER: "hr_manager",
-        HR_PAYROLL_MANAGER: "hr_payroll_manager",
-        EMPLOYEE: "employee",
-      };
-
-      const mappedRole = roleMap[user.role] || "employee";
-
+    const matchedPersona = DEMO_PERSONAS.find((p) => p.role === selectedRole);
+    if (matchedPersona) {
       onAuthenticate({
-        role: mappedRole,
-        name: user.full_name,
-        email: user.email,
-        initialNav: mappedRole === "employee" ? "my-profile" : "dashboard",
+        role: matchedPersona.role,
+        name: name || matchedPersona.name,
+        email: email || matchedPersona.email,
+        employeeId: matchedPersona.employeeId,
+        initialNav: matchedPersona.initialNav
       });
-    } catch (err: any) {
-      setValidationError(err.message || "Invalid email or password");
+    } else {
+      onAuthenticate({
+        role: "hr_manager",
+        name: name || "HR Manager",
+        email: email,
+        initialNav: "dashboard"
+      });
     }
   };
 
-  const handleQuickLaunch = async (persona: (typeof DEMO_PERSONAS)[0]) => {
-    try {
-      await login(persona.email, persona.password);
-      const user = await getCurrentUser();
-      const roleMap: Record<string, UserRole> = {
-        ADMIN: "admin",
-        HR_MANAGER: "hr_manager",
-        HR_PAYROLL_MANAGER: "hr_payroll_manager",
-        EMPLOYEE: "employee",
-      };
-      const mappedRole = roleMap[user.role] || persona.role;
-      onAuthenticate({
-        role: mappedRole,
-        name: user.full_name,
-        email: user.email,
-        employeeId: persona.employeeId,
-        initialNav: persona.initialNav
-      });
-    } catch {
-      onAuthenticate({
-        role: persona.role,
-        name: persona.name,
-        email: persona.email,
-        employeeId: persona.employeeId,
-        initialNav: persona.initialNav
-      });
-    }
+  const handleQuickLaunch = (persona: (typeof DEMO_PERSONAS)[0]) => {
+    onAuthenticate({
+      role: persona.role,
+      name: persona.name,
+      email: persona.email,
+      employeeId: persona.employeeId,
+      initialNav: persona.initialNav
+    });
   };
 
   return (

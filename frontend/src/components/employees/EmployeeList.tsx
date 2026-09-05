@@ -6,7 +6,6 @@ import {
   Plus,
   Filter,
   UserCheck,
-  Building2,
   FileText,
   Clock,
   ArrowRight,
@@ -14,9 +13,7 @@ import {
   CheckCircle2,
   LayoutGrid,
   List as ListIcon,
-  XCircle,
-  TrendingUp,
-  Sparkles
+  XCircle
 } from "lucide-react";
 import { Employee, WorkingSchedule, Contract } from "@/types/hr";
 import { AddEmployeeModal } from "@/components/employees/AddEmployeeModal";
@@ -159,8 +156,9 @@ export const EmployeeList: React.FC<EmployeeListProps> = ({
                 type="button"
                 suppressHydrationWarning
                 onClick={() => setViewMode("table")}
-                className={`p-1.5 rounded-lg transition ${viewMode === "table" ? "bg-white shadow-xs text-[#0F2F1E] font-semibold" : "text-slate-500 hover:text-slate-800"
-                  }`}
+                className={`p-1.5 rounded-lg transition ${
+                  viewMode === "table" ? "bg-white shadow-xs text-[#0F2F1E] font-semibold" : "text-slate-500 hover:text-slate-800"
+                }`}
                 title="Table View"
               >
                 <ListIcon className="w-4 h-4" />
@@ -169,8 +167,9 @@ export const EmployeeList: React.FC<EmployeeListProps> = ({
                 type="button"
                 suppressHydrationWarning
                 onClick={() => setViewMode("grid")}
-                className={`p-1.5 rounded-lg transition ${viewMode === "grid" ? "bg-white shadow-xs text-[#0F2F1E] font-semibold" : "text-slate-500 hover:text-slate-800"
-                  }`}
+                className={`p-1.5 rounded-lg transition ${
+                  viewMode === "grid" ? "bg-white shadow-xs text-[#0F2F1E] font-semibold" : "text-slate-500 hover:text-slate-800"
+                }`}
                 title="Grid Cards View"
               >
                 <LayoutGrid className="w-4 h-4" />
@@ -190,10 +189,11 @@ export const EmployeeList: React.FC<EmployeeListProps> = ({
               type="button"
               suppressHydrationWarning
               onClick={() => setSelectedDept(dept)}
-              className={`px-3 py-1 rounded-full text-xs transition cursor-pointer shrink-0 ${selectedDept === dept
-                ? "bg-[#0F2F1E] text-white font-semibold shadow-xs"
-                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                }`}
+              className={`px-3 py-1 rounded-full text-xs transition cursor-pointer shrink-0 ${
+                selectedDept === dept
+                  ? "bg-[#0F2F1E] text-white font-semibold shadow-xs"
+                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+              }`}
             >
               {dept}
             </button>
@@ -208,10 +208,11 @@ export const EmployeeList: React.FC<EmployeeListProps> = ({
               type="button"
               suppressHydrationWarning
               onClick={() => setSelectedStatus(st)}
-              className={`px-3 py-1 rounded-full text-xs transition cursor-pointer shrink-0 ${selectedStatus === st
-                ? "bg-[#0F2F1E] text-white font-semibold shadow-xs"
-                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                }`}
+              className={`px-3 py-1 rounded-full text-xs transition cursor-pointer shrink-0 ${
+                selectedStatus === st
+                  ? "bg-[#0F2F1E] text-white font-semibold shadow-xs"
+                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+              }`}
             >
               {st === "ALL" ? "All Status" : st === "ACTIVE" ? "Active" : "On Leave"}
             </button>
@@ -252,7 +253,7 @@ export const EmployeeList: React.FC<EmployeeListProps> = ({
                             setSelectedDept("ALL");
                             setSelectedStatus("ALL");
                           }}
-                          className="text-xs text-emerald-800 font-semibold hover:underline"
+                          className="text-xs text-emerald-800 font-semibold hover:underline cursor-pointer"
                         >
                           Clear all filters
                         </button>
@@ -317,14 +318,16 @@ export const EmployeeList: React.FC<EmployeeListProps> = ({
                         {/* Status Badge */}
                         <td className="py-3.5 px-4">
                           <span
-                            className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${emp.status === "ACTIVE"
-                              ? "bg-emerald-50 text-emerald-800 border border-emerald-200/60"
-                              : "bg-amber-50 text-amber-800 border border-amber-200/60"
-                              }`}
+                            className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${
+                              emp.status === "ACTIVE"
+                                ? "bg-emerald-50 text-emerald-800 border border-emerald-200/60"
+                                : "bg-amber-50 text-amber-800 border border-amber-200/60"
+                            }`}
                           >
                             <span
-                              className={`w-1.5 h-1.5 rounded-full ${emp.status === "ACTIVE" ? "bg-emerald-600" : "bg-amber-600"
-                                }`}
+                              className={`w-1.5 h-1.5 rounded-full ${
+                                emp.status === "ACTIVE" ? "bg-emerald-600" : "bg-amber-600"
+                              }`}
                             />
                             {emp.status === "ACTIVE" ? "Active" : "On Leave"}
                           </span>
@@ -395,10 +398,11 @@ export const EmployeeList: React.FC<EmployeeListProps> = ({
                       </div>
                     </div>
                     <span
-                      className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${emp.status === "ACTIVE"
-                        ? "bg-emerald-50 text-emerald-800 border border-emerald-200/60"
-                        : "bg-amber-50 text-amber-800 border border-amber-200/60"
-                        }`}
+                      className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                        emp.status === "ACTIVE"
+                          ? "bg-emerald-50 text-emerald-800 border border-emerald-200/60"
+                          : "bg-amber-50 text-amber-800 border border-amber-200/60"
+                      }`}
                     >
                       {emp.status === "ACTIVE" ? "Active" : "On Leave"}
                     </span>

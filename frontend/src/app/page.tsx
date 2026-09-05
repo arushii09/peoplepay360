@@ -14,27 +14,29 @@ import { FinalCta } from "@/components/landing/final-cta";
 import { Footer } from "@/components/landing/footer";
 import { LegalModal } from "@/components/landing/legal-modal";
 
-import { AuthView, UserSession, UserRole } from "@/components/auth/AuthView";
+import { AuthView, UserSession } from "@/components/auth/AuthView";
 import { AppShell } from "@/components/layout/AppShell";
 import { DashboardOverview } from "@/components/dashboard/DashboardOverview";
 import { EmployeeList, EmployeeProfile } from "@/components/employees";
 import { EmployeePortal } from "@/components/employee-portal/EmployeePortal";
 import { AdminRolesPanel } from "@/components/admin/AdminRolesPanel";
-import { initialEmployees, initialSchedules } from "@/lib";
-import type { Employee } from "@/types/hr";
+import {
+  SalaryStructuresView,
+  SalaryRulesView,
+  PayrunListView,
+  CreatePayrunWizard,
+  PayrollEngineView,
+  PayrunFlowView,
+  PayrollDashboardView
+} from "@/components/payroll";
+import { initialEmployees, initialSchedules, initialPayruns } from "@/lib";
+import type { Employee, Payrun } from "@/types/hr";
 import {
   FileText,
   Clock,
   Calendar,
   Calculator,
-  ShieldCheck,
   CheckCircle2,
-  AlertTriangle,
-  ArrowRight,
-  TrendingUp,
-  UserCheck,
-  Building2,
-  DollarSign,
   Lock,
   Plus
 } from "lucide-react";
@@ -42,7 +44,7 @@ import {
 export default function PeoplePay360App() {
   // Top-level Application View Flow: Landing -> Auth -> App (Role-based)
   const [viewMode, setViewMode] = useState<"landing" | "auth" | "app">("landing");
-  const [authMode, setAuthMode] = useState<"signin" | "signup">( "signin");
+  const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
 
   // Authenticated User Session per Section 3 specifications
   const [session, setSession] = useState<UserSession>({
@@ -153,6 +155,7 @@ export default function PeoplePay360App() {
     if (activeNav === "contracts") return [{ label: "HR Operations" }, { label: "Contracts Hub" }];
     if (activeNav === "attendance") return [{ label: "HR Operations" }, { label: "Attendance & OT" }];
     if (activeNav === "time-off") return [{ label: "HR Operations" }, { label: "Time Off Approvals" }];
+    if (activeNav === "payroll-dashboard") return [{ label: "Payroll Processing" }, { label: "Payroll Dashboard" }];
     if (activeNav === "payroll") return [{ label: "Payroll Processing" }, { label: "Payruns & Calculation Trace" }];
     if (activeNav === "admin-roles") return [{ label: "Administration" }, { label: "User Roles & Permissions" }];
     return [{ label: "Operations Hub" }];
@@ -176,6 +179,7 @@ export default function PeoplePay360App() {
     if (activeNav === "contracts") return "Contracts Hub";
     if (activeNav === "attendance") return "Attendance & Overtime";
     if (activeNav === "time-off") return "Time Off Approvals";
+    if (activeNav === "payroll-dashboard") return "Payroll Dashboard";
     if (activeNav === "payroll") return "Payroll Engine & Trace";
     if (activeNav === "admin-roles") return "User Roles & Permissions";
     return activeNav;
@@ -187,40 +191,17 @@ export default function PeoplePay360App() {
   if (viewMode === "landing") {
     return (
       <div className="min-h-screen bg-[#F6F7F2] text-[#1A1A1A] font-sans antialiased selection:bg-[#E8F3E6] selection:text-[#0F2F1E]">
-        {/* Navigation Bar with Login CTA */}
         <Navbar onOpenLogin={() => handleGoToAuth("signin")} />
-
-        {/* Hero Section with Get Started CTA */}
         <Hero onOpenGetStarted={() => handleGoToAuth("signup")} />
-
-        {/* 5-Stage Pipeline Flow */}
         <PipelineFlow />
-
-        {/* Core HR Operations */}
         <HrOperations />
-
-        {/* Explainable Calculation Trace Demo */}
         <ExplainablePayroll />
-
-        {/* Interactive What-If Simulation Sandbox */}
         <WhatIfSimulator />
-
-        {/* Data Architecture Schema */}
         <DataArchitecture />
-
-        {/* Preflight Guardrails & Safety */}
         <SafetySection />
-
-        {/* Frequently Asked Questions */}
         <FAQSection />
-
-        {/* Bottom CTA Banner */}
         <FinalCta onOpenGetStarted={() => handleGoToAuth("signup")} />
-
-        {/* Legal & Enterprise Footer */}
         <Footer onOpenLegal={(type) => setLegalModalType(type)} />
-
-        {/* Terms of Service & Privacy Policy Modal */}
         <LegalModal
           isOpen={!!legalModalType}
           onClose={() => setLegalModalType(null)}
@@ -257,11 +238,7 @@ export default function PeoplePay360App() {
       currentUserEmail={session.email}
       onSignOut={handleSignOut}
     >
-      {/* -------------------------------------------------------------
-          ROLE 1: EMPLOYEE (Self-Service Designated Pages)
-          - View own employee details, attendance records, leave balances
-          - Create attendance entries and Time Off Requests (No HR/payroll access)
-          ------------------------------------------------------------- */}
+      {/* ROLE 1: EMPLOYEE (Self-Service Designated Pages) */}
       {session.role === "employee" && (
         <EmployeePortal
           employee={currentLoggedInEmployee}
@@ -270,9 +247,7 @@ export default function PeoplePay360App() {
         />
       )}
 
-      {/* -------------------------------------------------------------
-          ROLES 2, 3, 4, 5: ADMINISTRATIVE & OPERATIONAL DASHBOARDS
-          ------------------------------------------------------------- */}
+      {/* ROLES 2, 3, 4, 5: ADMINISTRATIVE & OPERATIONAL DASHBOARDS */}
       {session.role !== "employee" && (
         <>
           {/* DASHBOARD ROUTE */}
@@ -286,7 +261,7 @@ export default function PeoplePay360App() {
             />
           )}
 
-          {/* EMPLOYEES DIRECTORY ROUTE (Full CRUD for HR Manager, HR Payroll User/Manager, Admin) */}
+          {/* EMPLOYEES DIRECTORY ROUTE */}
           {activeNav === "employees" && (
             <>
               {selectedEmployee ? (
@@ -306,7 +281,7 @@ export default function PeoplePay360App() {
             </>
           )}
 
-          {/* CONTRACTS HUB (Full CRUD) */}
+          {/* CONTRACTS HUB */}
           {activeNav === "contracts" && (
             <div className="space-y-6">
               <div className="flex items-center justify-between">
@@ -366,7 +341,7 @@ export default function PeoplePay360App() {
             </div>
           )}
 
-          {/* ATTENDANCE & OVERTIME LEDGER (Full CRUD) */}
+          {/* ATTENDANCE & OVERTIME LEDGER */}
           {activeNav === "attendance" && (
             <div className="space-y-6">
               <div className="flex items-center justify-between">
@@ -436,7 +411,7 @@ export default function PeoplePay360App() {
             </div>
           )}
 
-          {/* TIME OFF & APPROVALS WORKSPACE (Approve or Refuse Requests) */}
+          {/* TIME OFF & APPROVALS WORKSPACE */}
           {activeNav === "time-off" && (
             <div className="space-y-6">
               <div className="flex items-center justify-between">
@@ -538,140 +513,39 @@ export default function PeoplePay360App() {
             </div>
           )}
 
-          {/* PAYROLL ENGINE ROUTE (HR Payroll User, HR Payroll Manager, Admin only) */}
-          {activeNav === "payroll" && session.role !== "hr_manager" && (
-            <div className="space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                  <h1 className="font-display font-bold text-2xl text-[#0F2F1E] font-serif">
-                    Payroll Calculation Engine
-                  </h1>
-                  <p className="text-xs text-slate-500 mt-1">
-                    Deterministic calculation trace connecting Contracts, Attendance, and Time Off into verified pay disbursements.
-                  </p>
-                </div>
+          {/* PAYROLL DASHBOARD ROUTE (Wireframe 6 Multi-Model Aggregation) */}
+          {activeNav === "payroll-dashboard" && session.role !== "hr_manager" && (
+            <PayrollDashboardView
+              currentUserRole={session.role}
+              onNavigate={handleNavigate}
+              onNavigateToStructures={() => setActiveNav("salary-structures")}
+              onNavigateToPayruns={() => setActiveNav("payruns")}
+            />
+          )}
 
-                {/* Role Access Scope Badge */}
-                <div className="flex items-center gap-2">
-                  {session.role === "hr_payroll_user" ? (
-                    <span className="px-3 py-1.5 rounded-xl bg-cyan-50 border border-cyan-200 text-cyan-800 text-xs font-semibold flex items-center gap-1.5">
-                      <Lock className="w-3.5 h-3.5 text-cyan-600" />
-                      <span>Payruns: CRU | Rules: Read-Only</span>
-                    </span>
-                  ) : (
-                    <span className="px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-1.5">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                      <span>Full CRUD Control (Payruns & Salary Rules)</span>
-                    </span>
-                  )}
-                </div>
-              </div>
+          {/* SALARY STRUCTURES ROUTE (Row 2 Engine) */}
+          {activeNav === "salary-structures" && session.role !== "hr_manager" && (
+            <SalaryStructuresView
+              currentUserRole={session.role}
+              onNavigateToPayruns={() => setActiveNav("payruns")}
+              onNavigateToDashboard={() => setActiveNav("payroll-dashboard")}
+            />
+          )}
 
-              {/* Salary Structure & Sequence */}
-              <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-display font-semibold text-base text-[#0F2F1E] font-serif">
-                      Salary Structure: Standard Corporate Executive (Sequence Execution)
-                    </h3>
-                    <p className="text-xs text-slate-400 mt-0.5">
-                      {session.role === "hr_payroll_user"
-                        ? "Read-only access to rule formulas and sequences (HR Payroll Manager permission required to edit)."
-                        : "Full configuration control: Edit rule formulas, alter execution sequences, and commit statutory parameters."}
-                    </p>
-                  </div>
-                  {session.role !== "hr_payroll_user" && (
-                    <button
-                      type="button"
-                      suppressHydrationWarning
-                      onClick={() => alert("New Salary Rule Modal (Full CRUD enabled for " + session.role.toUpperCase() + ")")}
-                      className="px-3 py-1.5 rounded-xl bg-[#0F2F1E] text-white text-xs font-semibold hover:bg-[#1F4D32] transition flex items-center gap-1 cursor-pointer"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      <span>Add Rule</span>
-                    </button>
-                  )}
-                </div>
+          {/* SALARY RULES ROUTE (Row 3 Engine) */}
+          {activeNav === "salary-rules" && session.role !== "hr_manager" && (
+            <SalaryRulesView
+              currentUserRole={session.role}
+              onNavigateToStructures={() => setActiveNav("salary-structures")}
+            />
+          )}
 
-                <div className="grid grid-cols-2 sm:grid-cols-6 gap-3 text-xs">
-                  <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
-                    <span className="text-[10px] font-mono text-slate-400">Seq 10 (Basic)</span>
-                    <div className="font-semibold text-slate-900 mt-1">BASIC</div>
-                    <div className="text-[10px] text-slate-500 font-mono">contract.wage * 0.50</div>
-                  </div>
-                  <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
-                    <span className="text-[10px] font-mono text-slate-400">Seq 20 (HRA)</span>
-                    <div className="font-semibold text-slate-900 mt-1">HRA</div>
-                    <div className="text-[10px] text-slate-500 font-mono">contract.wage * 0.20</div>
-                  </div>
-                  <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
-                    <span className="text-[10px] font-mono text-slate-400">Seq 30 (DA)</span>
-                    <div className="font-semibold text-slate-900 mt-1">DA</div>
-                    <div className="text-[10px] text-slate-500 font-mono">contract.wage * 0.10</div>
-                  </div>
-                  <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
-                    <span className="text-[10px] font-mono text-slate-400">Seq 40 (Gross)</span>
-                    <div className="font-semibold text-slate-900 mt-1">GROSS</div>
-                    <div className="text-[10px] text-slate-500 font-mono">BASIC + HRA + DA</div>
-                  </div>
-                  <div className="p-3.5 rounded-2xl bg-red-50/60 border border-red-200">
-                    <span className="text-[10px] font-mono text-red-600">Seq 50 (PF)</span>
-                    <div className="font-semibold text-red-700 mt-1">PF</div>
-                    <div className="text-[10px] text-red-600 font-mono">BASIC * 0.12</div>
-                  </div>
-                  <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200">
-                    <span className="text-[10px] font-mono text-emerald-700">Seq 100 (Net)</span>
-                    <div className="font-semibold text-emerald-900 mt-1">NET</div>
-                    <div className="text-[10px] text-emerald-700 font-mono">GROSS - PF</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Payrun Cycle Execution Summary */}
-              <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-display font-semibold text-base text-[#0F2F1E] font-serif">
-                      Upcoming Cycle: October 2026 Regular Payrun
-                    </h3>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      Deterministic engine evaluating 84 active contracts and 1,340 attendance punches.
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    suppressHydrationWarning
-                    onClick={() => alert("Deterministic payroll recalculation executed! 0 preflight warnings.")}
-                    className="px-4 py-2 rounded-xl bg-[#0F2F1E] text-white text-xs font-semibold hover:bg-[#1F4D32] transition shadow-xs cursor-pointer"
-                  >
-                    Run Preflight Audit
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 pt-2">
-                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs">
-                    <span className="text-slate-500">Gross Period Liability</span>
-                    <div className="text-xl font-bold font-mono text-slate-900 mt-1">₹4,850,000</div>
-                    <span className="text-[10px] text-emerald-700">84 Active Contracts</span>
-                  </div>
-                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs">
-                    <span className="text-slate-500">Attendance Feeds</span>
-                    <div className="text-xl font-bold font-mono text-slate-900 mt-1">99.2% Sync</div>
-                    <span className="text-[10px] text-emerald-700">42 Overtime exceptions</span>
-                  </div>
-                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs">
-                    <span className="text-slate-500">Statutory Deductions (PF)</span>
-                    <div className="text-xl font-bold font-mono text-red-700 mt-1">₹291,000</div>
-                    <span className="text-[10px] text-slate-500">Direct EPFO compliant</span>
-                  </div>
-                  <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs">
-                    <span className="text-emerald-800 font-medium">Net Disbursable</span>
-                    <div className="text-xl font-bold font-mono text-emerald-900 mt-1">₹4,559,000</div>
-                    <span className="text-[10px] text-emerald-800">Ready for Bank Export</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+          {/* EXACT PAYRUN FLOW ROUTE (Left List <-> Right Detail) */}
+          {(activeNav === "payruns" || activeNav === "payroll") && session.role !== "hr_manager" && (
+            <PayrunFlowView
+              currentUserRole={session.role}
+              initialPayrunId={null}
+            />
           )}
 
           {/* SYSTEM ADMINISTRATION ROUTE (Admin only) */}

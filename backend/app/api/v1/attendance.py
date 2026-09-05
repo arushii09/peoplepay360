@@ -25,13 +25,13 @@ def list_attendances(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    if current_user.role==UserRole.EMPLOYEE:
+    if current_user.role == UserRole.EMPLOYEE:
         if not current_user.employee:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="User account is not linked to an employee profile",
             )
-        employee_id=current_user.employee.id
+        employee_id = current_user.employee.id
 
 
     
