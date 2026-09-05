@@ -2,22 +2,23 @@
 
 import * as React from "react";
 import { useState } from "react";
-import { UserPlus, User, Lock, Mail, ShieldCheck } from "lucide-react";
+import { UserPlus, User, Lock, Mail, ShieldCheck, CheckCircle2 } from "lucide-react";
 
 interface SignUpProps {
   onSwitchToSignIn?: () => void;
 }
 
 const SignUp = ({ onSwitchToSignIn }: SignUpProps) => {
-  const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [fullName, setFullName] = useState("Aarav Mehta");
+  const [email, setEmail] = useState("aarav.mehta@peoplepay.com");
+  const [password, setPassword] = useState("••••••••");
+  const [confirmPassword, setConfirmPassword] = useState("••••••••");
   const [error, setError] = useState("");
   const [agreeTerms, setAgreeTerms] = useState(true);
+  const [success, setSuccess] = useState(false);
 
-  const validateEmail = (email: string) => {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const validateEmail = (emailVal: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal);
   };
 
   const handleSignUp = () => {
@@ -42,142 +43,146 @@ const SignUp = ({ onSwitchToSignIn }: SignUpProps) => {
       return;
     }
     setError("");
-    alert("Sign up successful! (Demo)");
+    setSuccess(true);
+    setTimeout(() => {
+      setSuccess(false);
+    }, 3000);
   };
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-transparent rounded-xl z-1 py-10">
-      <div className="w-full max-w-sm bg-gradient-to-b from-sky-50/50 to-white rounded-3xl shadow-xl shadow-opacity-10 p-8 flex flex-col items-center border border-blue-100 text-black">
-        <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-white mb-5 shadow-lg shadow-opacity-5">
-          <UserPlus className="w-7 h-7 text-black" />
+      <div className="w-full max-w-sm bg-gradient-to-b from-emerald-50/40 to-white rounded-3xl shadow-xl shadow-opacity-10 p-8 flex flex-col items-center border border-emerald-100/80 text-slate-900">
+        <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-[#0F2F1E] text-[#9FD067] mb-5 shadow-md">
+          <UserPlus className="w-6 h-6" />
         </div>
-        <h2 className="text-2xl font-semibold mb-2 text-center">
-          Create an account
+        <h2 className="text-2xl font-display font-bold mb-2 text-center text-[#0F2F1E]">
+          Create Account
         </h2>
-        <p className="text-gray-500 text-sm mb-6 text-center">
-          Join us today to bring your team, workflow, and operations together.
+        <p className="text-slate-500 text-xs mb-6 text-center">
+          Register to access organizational HR records, attendance, and payroll processing.
         </p>
 
+        {success && (
+          <div className="w-full mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>Account registered successfully.</span>
+          </div>
+        )}
+
         <div className="w-full flex flex-col gap-3 mb-2">
-          {/* Full Name */}
           <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
               <User className="w-4 h-4" />
             </span>
             <input
               placeholder="Full Name"
               type="text"
               value={fullName}
-              className="w-full pl-10 pr-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-200 bg-gray-50 text-black text-sm"
+              className="w-full pl-10 pr-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-600/30 bg-slate-50/60 text-slate-800 text-xs"
               onChange={(e) => setFullName(e.target.value)}
             />
           </div>
 
-          {/* Email */}
           <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
               <Mail className="w-4 h-4" />
             </span>
             <input
               placeholder="Email address"
               type="email"
               value={email}
-              className="w-full pl-10 pr-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-200 bg-gray-50 text-black text-sm"
+              className="w-full pl-10 pr-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-600/30 bg-slate-50/60 text-slate-800 text-xs"
               onChange={(e) => setEmail(e.target.value)}
             />
           </div>
 
-          {/* Password */}
           <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
               <Lock className="w-4 h-4" />
             </span>
             <input
               placeholder="Password"
               type="password"
               value={password}
-              className="w-full pl-10 pr-10 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-200 bg-gray-50 text-black text-sm"
+              className="w-full pl-10 pr-10 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-600/30 bg-slate-50/60 text-slate-800 text-xs"
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
 
-          {/* Confirm Password */}
           <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
               <ShieldCheck className="w-4 h-4" />
             </span>
             <input
               placeholder="Confirm password"
               type="password"
               value={confirmPassword}
-              className="w-full pl-10 pr-10 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-200 bg-gray-50 text-black text-sm"
+              className="w-full pl-10 pr-10 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-600/30 bg-slate-50/60 text-slate-800 text-xs"
               onChange={(e) => setConfirmPassword(e.target.value)}
             />
           </div>
 
-          {/* Terms checkbox */}
           <div className="flex items-center gap-2 mt-1">
             <input
               id="terms"
               type="checkbox"
               checked={agreeTerms}
               onChange={(e) => setAgreeTerms(e.target.checked)}
-              className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-200 cursor-pointer"
+              className="w-4 h-4 rounded border-slate-300 text-emerald-800 focus:ring-emerald-600/30 cursor-pointer"
             />
-            <label htmlFor="terms" className="text-xs text-gray-500 cursor-pointer select-none">
-              I agree to the <span className="text-black font-medium hover:underline">Terms & Privacy Policy</span>
+            <label htmlFor="terms" className="text-xs text-slate-500 cursor-pointer select-none">
+              I agree to the <span className="text-[#0F2F1E] font-medium hover:underline">Terms & Privacy Policy</span>
             </label>
           </div>
 
           {error && (
-            <div className="text-xs text-red-500 text-left mt-1 font-medium">{error}</div>
+            <div className="text-xs text-red-600 text-left mt-1 font-medium">{error}</div>
           )}
         </div>
 
         <button
           onClick={handleSignUp}
-          className="w-full bg-gradient-to-b from-gray-700 to-gray-900 text-white font-medium py-2 rounded-xl shadow hover:brightness-105 cursor-pointer transition mb-3 mt-2"
+          className="w-full bg-[#0F2F1E] text-white font-semibold py-2.5 rounded-xl shadow-xs hover:bg-[#1F4D32] cursor-pointer transition mb-3 mt-2 text-xs"
         >
           Create Account
         </button>
 
-        {/* Switch to Sign In */}
         <div className="text-center mb-3">
-          <span className="text-xs text-gray-500">Already have an account? </span>
+          <span className="text-xs text-slate-500">Already have an account? </span>
           <button
             onClick={onSwitchToSignIn}
-            className="text-xs font-semibold text-black hover:underline cursor-pointer"
+            className="text-xs font-semibold text-[#0F2F1E] hover:underline cursor-pointer"
           >
             Sign in
           </button>
         </div>
 
         <div className="flex items-center w-full my-2">
-          <div className="flex-grow border-t border-dashed border-gray-200"></div>
-          <span className="mx-2 text-xs text-gray-400">Or sign up with</span>
-          <div className="flex-grow border-t border-dashed border-gray-200"></div>
+          <div className="flex-grow border-t border-dashed border-slate-200"></div>
+          <span className="mx-2 text-[11px] font-mono text-slate-400">Or sign up with</span>
+          <div className="flex-grow border-t border-dashed border-slate-200"></div>
         </div>
 
         <div className="flex gap-3 w-full justify-center mt-2">
-          <button className="flex items-center justify-center w-12 h-12 rounded-xl border bg-white hover:bg-gray-100 transition grow">
+          <button className="flex items-center justify-center w-12 h-11 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition grow cursor-pointer">
             <img
               src="https://cdn.21st.dev/assets/mirror/38/38146bfd9eff6dbf0d74771f2e625c70d87d3770e0d080dbb6e50db1d5403f46.svg"
               alt="Google"
-              className="w-6 h-6"
+              className="w-5 h-5"
             />
           </button>
-          <button className="flex items-center justify-center w-12 h-12 rounded-xl border bg-white hover:bg-gray-100 transition grow">
+          <button className="flex items-center justify-center w-12 h-11 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition grow cursor-pointer">
             <img
               src="https://cdn.21st.dev/assets/mirror/49/49c99a2bb048f4c4941540ccf601621071669cdd1f51e52312a412f23bb2d5fa.svg"
               alt="Facebook"
-              className="w-6 h-6"
+              className="w-5 h-5"
             />
           </button>
-          <button className="flex items-center justify-center w-12 h-12 rounded-xl border bg-white hover:bg-gray-100 transition grow">
+          <button className="flex items-center justify-center w-12 h-11 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition grow cursor-pointer">
             <img
               src="https://cdn.21st.dev/assets/mirror/c2/c221b3f2143cf5d8d85a3b68da84dbae21b18db4164e63ca8c07c6ffdbb922c4.svg"
               alt="Apple"
-              className="w-6 h-6"
+              className="w-5 h-5"
             />
           </button>
         </div>

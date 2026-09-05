@@ -73,7 +73,7 @@ export const initialEmployees: Employee[] = [
     schedule_id: 1,
     schedule_name: "Standard 40h Schedule",
     status: "ACTIVE",
-    bank_account_no: null, // Intentionally missing to demonstrate preflight validation warning
+    bank_account_no: null,
     bank_name: null,
     ifsc_code: null,
     tax_id: null,

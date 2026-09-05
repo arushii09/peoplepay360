@@ -29,18 +29,15 @@ export default function PeoplePay360App() {
 
   const selectedEmployee = employees.find(e => e.id === selectedEmployeeId) || null;
 
-  // Add Employee Handler
   const handleAddEmployee = (newEmp: Employee) => {
     setEmployees([newEmp, ...employees]);
     setSelectedEmployeeId(newEmp.id);
   };
 
-  // Update Employee Handler (e.g. attendance punches, leave requests)
   const handleUpdateEmployee = (updated: Employee) => {
     setEmployees(employees.map(e => (e.id === updated.id ? updated : e)));
   };
 
-  // Breadcrumbs generator
   const getBreadcrumbs = () => {
     if (activeNav === "employees" && selectedEmployee) {
       return [
@@ -62,9 +59,7 @@ export default function PeoplePay360App() {
       activeNav={activeNav}
       onNavigate={(navId) => {
         setActiveNav(navId);
-        if (navId === "employees") {
-          // keep or clear
-        } else {
+        if (navId !== "employees") {
           setSelectedEmployeeId(null);
         }
       }}
@@ -77,7 +72,6 @@ export default function PeoplePay360App() {
       }
       breadcrumbs={getBreadcrumbs()}
     >
-      {/* 1. EMPLOYEES NAVIGATION ROUTE (Order 2 & Order 3) */}
       {activeNav === "employees" && (
         <>
           {selectedEmployee ? (
@@ -97,7 +91,6 @@ export default function PeoplePay360App() {
         </>
       )}
 
-      {/* 2. CONTRACTS HUB SHORTCUT */}
       {activeNav === "contracts" && (
         <div className="space-y-6">
           <div className="flex items-center justify-between">
@@ -155,7 +148,6 @@ export default function PeoplePay360App() {
         </div>
       )}
 
-      {/* 3. ATTENDANCE AGGREGATE VIEW */}
       {activeNav === "attendance" && (
         <div className="space-y-6">
           <div className="flex items-center justify-between">
@@ -223,7 +215,6 @@ export default function PeoplePay360App() {
         </div>
       )}
 
-      {/* 4. TIME OFF & APPROVALS WORKSPACE */}
       {activeNav === "time-off" && (
         <div className="space-y-6">
           <div className="flex items-center justify-between">
@@ -319,7 +310,6 @@ export default function PeoplePay360App() {
         </div>
       )}
 
-      {/* 5. PAYROLL ENGINE OVERVIEW */}
       {activeNav === "payroll" && (
         <div className="space-y-6">
           <div className="flex items-center justify-between">
@@ -371,7 +361,6 @@ export default function PeoplePay360App() {
         </div>
       )}
 
-      {/* 6. AUTHENTICATION TAB */}
       {activeNav === "auth" && (
         <div className="flex flex-col items-center justify-center py-6">
           <div className="mb-4 bg-white border border-slate-200 p-1 rounded-2xl flex items-center shadow-xs">

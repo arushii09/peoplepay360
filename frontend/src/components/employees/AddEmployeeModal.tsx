@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { X, User, Mail, Phone, Building2, Briefcase, CreditCard, ShieldCheck, DollarSign } from "lucide-react";
+import { X, User, Building2, CreditCard, DollarSign } from "lucide-react";
 import { Employee, WorkingSchedule } from "@/types/hr";
 
 interface AddEmployeeModalProps {
@@ -96,7 +96,6 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in duration-200">
       <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        {/* Modal Header */}
         <div className="p-6 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white/95 backdrop-blur-md z-10">
           <div>
             <h3 className="font-display font-bold text-xl text-[#0F2F1E]">Add New Employee</h3>
@@ -112,7 +111,6 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
           </button>
         </div>
 
-        {/* Modal Body Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-6 text-xs">
           {error && (
             <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 font-medium">
@@ -120,11 +118,10 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
             </div>
           )}
 
-          {/* Section 1: Basic Information */}
           <div className="space-y-3">
             <h4 className="font-semibold text-slate-900 text-xs uppercase tracking-wider font-mono flex items-center gap-1.5">
               <User className="w-3.5 h-3.5 text-emerald-700" />
-              1. Basic Information
+              Basic Information
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
@@ -134,7 +131,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
                   required
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
-                  placeholder="e.g. Aarav"
+                  placeholder="Aarav"
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600/30 text-xs"
                 />
               </div>
@@ -145,7 +142,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
                   required
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
-                  placeholder="e.g. Mehta"
+                  placeholder="Mehta"
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600/30 text-xs"
                 />
               </div>
@@ -156,7 +153,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="e.g. aarav.mehta@peoplepay.com"
+                  placeholder="aarav.mehta@peoplepay.com"
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600/30 text-xs"
                 />
               </div>
@@ -173,11 +170,10 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
             </div>
           </div>
 
-          {/* Section 2: Department & Schedule */}
           <div className="space-y-3 pt-2 border-t border-slate-100">
             <h4 className="font-semibold text-slate-900 text-xs uppercase tracking-wider font-mono flex items-center gap-1.5">
               <Building2 className="w-3.5 h-3.5 text-emerald-700" />
-              2. Job Position & Schedule
+              Job Position & Schedule
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
@@ -201,7 +197,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
                   required
                   value={jobPosition}
                   onChange={(e) => setJobPosition(e.target.value)}
-                  placeholder="e.g. Lead Architect"
+                  placeholder="Lead Architect"
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white text-xs focus:outline-none focus:ring-2 focus:ring-emerald-600/30"
                 />
               </div>
@@ -222,15 +218,14 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
             </div>
           </div>
 
-          {/* Section 3: Initial Contract */}
           <div className="space-y-3 pt-2 border-t border-slate-100">
             <h4 className="font-semibold text-slate-900 text-xs uppercase tracking-wider font-mono flex items-center gap-1.5">
               <DollarSign className="w-3.5 h-3.5 text-emerald-700" />
-              3. Initial Active Contract (Payroll Input)
+              Initial Active Contract
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="text-[11px] font-medium text-slate-600 block mb-1">Monthly Wage ($ or ₹) *</label>
+                <label className="text-[11px] font-medium text-slate-600 block mb-1">Monthly Wage *</label>
                 <input
                   type="number"
                   min="0"
@@ -241,9 +236,6 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
                   placeholder="6000"
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white text-xs font-semibold text-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-600/30"
                 />
-                <span className="text-[10px] text-slate-400 mt-0.5 block">
-                  Feeds directly into Basic (50%), HRA (20%), and DA (10%) rules.
-                </span>
               </div>
               <div>
                 <label className="text-[11px] font-medium text-slate-600 block mb-1">Salary Structure</label>
@@ -257,12 +249,11 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
             </div>
           </div>
 
-          {/* Section 4: Bank & Tax Information */}
           <div className="space-y-3 pt-2 border-t border-slate-100">
             <div className="flex items-center justify-between">
               <h4 className="font-semibold text-slate-900 text-xs uppercase tracking-wider font-mono flex items-center gap-1.5">
                 <CreditCard className="w-3.5 h-3.5 text-emerald-700" />
-                4. Bank & Statutory Tax Details
+                Bank & Statutory Tax Details
               </h4>
               <span className="text-[10px] font-mono text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
                 Required for Payroll Validation
@@ -275,7 +266,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
                   type="text"
                   value={bankName}
                   onChange={(e) => setBankName(e.target.value)}
-                  placeholder="e.g. Chase Bank / HDFC"
+                  placeholder="Chase Bank"
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50/50 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-600/30"
                 />
               </div>
@@ -285,7 +276,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
                   type="text"
                   value={bankAccountNo}
                   onChange={(e) => setBankAccountNo(e.target.value)}
-                  placeholder="e.g. 1234567890"
+                  placeholder="1234567890"
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50/50 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-600/30"
                 />
               </div>
@@ -295,7 +286,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
                   type="text"
                   value={ifscCode}
                   onChange={(e) => setIfscCode(e.target.value)}
-                  placeholder="e.g. CHAS0001234"
+                  placeholder="CHAS0001234"
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50/50 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-600/30"
                 />
               </div>
@@ -305,14 +296,13 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
                   type="text"
                   value={taxId}
                   onChange={(e) => setTaxId(e.target.value)}
-                  placeholder="e.g. TX-AARAV-9921"
+                  placeholder="TX-AARAV-9921"
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50/50 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-600/30"
                 />
               </div>
             </div>
           </div>
 
-          {/* Modal Footer */}
           <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
             <button
               type="button"

@@ -2,19 +2,20 @@
 
 import * as React from "react";
 import { useState } from "react";
-import { LogIn, Lock, Mail } from "lucide-react";
+import { LogIn, Lock, Mail, CheckCircle2 } from "lucide-react";
 
 interface SignIn2Props {
   onSwitchToSignUp?: () => void;
 }
 
 const SignIn2 = ({ onSwitchToSignUp }: SignIn2Props) => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("alex@peoplepay.com");
+  const [password, setPassword] = useState("••••••••");
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
 
-  const validateEmail = (email: string) => {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const validateEmail = (emailVal: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal);
   };
 
   const handleSignIn = () => {
@@ -27,99 +28,110 @@ const SignIn2 = ({ onSwitchToSignUp }: SignIn2Props) => {
       return;
     }
     setError("");
-    alert("Sign in successful! (Demo)");
+    setSuccess(true);
+    setTimeout(() => {
+      setSuccess(false);
+    }, 3000);
   };
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-transparent rounded-xl z-1 py-10">
-      <div className="w-full max-w-sm bg-gradient-to-b from-sky-50/50 to-white rounded-3xl shadow-xl shadow-opacity-10 p-8 flex flex-col items-center border border-blue-100 text-black">
-        <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-white mb-6 shadow-lg shadow-opacity-5">
-          <LogIn className="w-7 h-7 text-black" />
+      <div className="w-full max-w-sm bg-gradient-to-b from-emerald-50/40 to-white rounded-3xl shadow-xl shadow-opacity-10 p-8 flex flex-col items-center border border-emerald-100/80 text-slate-900">
+        <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-[#0F2F1E] text-[#9FD067] mb-6 shadow-md">
+          <LogIn className="w-6 h-6" />
         </div>
-        <h2 className="text-2xl font-semibold mb-2 text-center">
-          Sign in with email
+        <h2 className="text-2xl font-display font-bold mb-2 text-center text-[#0F2F1E]">
+          Sign in to PeoplePay360
         </h2>
-        <p className="text-gray-500 text-sm mb-6 text-center">
-          Make a new doc to bring your words, data, and teams together. For free
+        <p className="text-slate-500 text-xs mb-6 text-center">
+          Access your organization&apos;s connected HR operations and payroll workspace.
         </p>
+
+        {success && (
+          <div className="w-full mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>Authenticated successfully.</span>
+          </div>
+        )}
+
         <div className="w-full flex flex-col gap-3 mb-2">
           <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
               <Mail className="w-4 h-4" />
             </span>
             <input
-              placeholder="Email"
+              placeholder="Email address"
               type="email"
               value={email}
-              className="w-full pl-10 pr-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-200 bg-gray-50 text-black text-sm"
+              className="w-full pl-10 pr-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-600/30 bg-slate-50/60 text-slate-800 text-xs"
               onChange={(e) => setEmail(e.target.value)}
             />
           </div>
           <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
               <Lock className="w-4 h-4" />
             </span>
             <input
               placeholder="Password"
               type="password"
               value={password}
-              className="w-full pl-10 pr-10 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-200 bg-gray-50 text-black text-sm"
+              className="w-full pl-10 pr-10 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-600/30 bg-slate-50/60 text-slate-800 text-xs"
               onChange={(e) => setPassword(e.target.value)}
             />
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer text-xs select-none"></span>
           </div>
           <div className="w-full flex justify-between items-center">
             {error ? (
-              <div className="text-xs text-red-500 text-left font-medium">{error}</div>
+              <div className="text-xs text-red-600 text-left font-medium">{error}</div>
             ) : <div />}
-            <button className="text-xs hover:underline font-medium text-gray-600">
+            <button className="text-xs hover:underline font-medium text-slate-500">
               Forgot password?
             </button>
           </div>
         </div>
+
         <button
           onClick={handleSignIn}
-          className="w-full bg-gradient-to-b from-gray-700 to-gray-900 text-white font-medium py-2 rounded-xl shadow hover:brightness-105 cursor-pointer transition mb-3 mt-2"
+          className="w-full bg-[#0F2F1E] text-white font-semibold py-2.5 rounded-xl shadow-xs hover:bg-[#1F4D32] cursor-pointer transition mb-3 mt-2 text-xs"
         >
-          Get Started
+          Sign In
         </button>
 
-        {/* Switch to Sign Up */}
         <div className="text-center mb-3">
-          <span className="text-xs text-gray-500">Don&apos;t have an account? </span>
+          <span className="text-xs text-slate-500">Don&apos;t have an account? </span>
           <button
             onClick={onSwitchToSignUp}
-            className="text-xs font-semibold text-black hover:underline cursor-pointer"
+            className="text-xs font-semibold text-[#0F2F1E] hover:underline cursor-pointer"
           >
             Sign up
           </button>
         </div>
 
         <div className="flex items-center w-full my-2">
-          <div className="flex-grow border-t border-dashed border-gray-200"></div>
-          <span className="mx-2 text-xs text-gray-400">Or sign in with</span>
-          <div className="flex-grow border-t border-dashed border-gray-200"></div>
+          <div className="flex-grow border-t border-dashed border-slate-200"></div>
+          <span className="mx-2 text-[11px] font-mono text-slate-400">Or sign in with</span>
+          <div className="flex-grow border-t border-dashed border-slate-200"></div>
         </div>
+
         <div className="flex gap-3 w-full justify-center mt-2">
-          <button className="flex items-center justify-center w-12 h-12 rounded-xl border bg-white hover:bg-gray-100 transition grow">
+          <button className="flex items-center justify-center w-12 h-11 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition grow cursor-pointer">
             <img
               src="https://cdn.21st.dev/assets/mirror/38/38146bfd9eff6dbf0d74771f2e625c70d87d3770e0d080dbb6e50db1d5403f46.svg"
               alt="Google"
-              className="w-6 h-6"
+              className="w-5 h-5"
             />
           </button>
-          <button className="flex items-center justify-center w-12 h-12 rounded-xl border bg-white hover:bg-gray-100 transition grow">
+          <button className="flex items-center justify-center w-12 h-11 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition grow cursor-pointer">
             <img
               src="https://cdn.21st.dev/assets/mirror/49/49c99a2bb048f4c4941540ccf601621071669cdd1f51e52312a412f23bb2d5fa.svg"
               alt="Facebook"
-              className="w-6 h-6"
+              className="w-5 h-5"
             />
           </button>
-          <button className="flex items-center justify-center w-12 h-12 rounded-xl border bg-white hover:bg-gray-100 transition grow">
+          <button className="flex items-center justify-center w-12 h-11 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition grow cursor-pointer">
             <img
               src="https://cdn.21st.dev/assets/mirror/c2/c221b3f2143cf5d8d85a3b68da84dbae21b18db4164e63ca8c07c6ffdbb922c4.svg"
               alt="Apple"
-              className="w-6 h-6"
+              className="w-5 h-5"
             />
           </button>
         </div>

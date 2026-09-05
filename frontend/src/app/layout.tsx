@@ -16,8 +16,8 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
-  title: "Solarify | Clean Energy & Design System",
-  description: "Solarify UI Design System - Clean Energy. Brighter Tomorrows.",
+  title: "PeoplePay360 | Connected HR & Payroll Platform",
+  description: "Unified employee lifecycle, active contracts, attendance tracking, and deterministic payroll calculation.",
 };
 
 export default function RootLayout({

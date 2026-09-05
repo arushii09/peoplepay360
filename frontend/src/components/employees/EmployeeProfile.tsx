@@ -4,24 +4,16 @@ import React, { useState } from "react";
 import {
   ArrowLeft,
   User,
-  Mail,
-  Phone,
-  Building2,
-  Calendar,
   FileText,
   Clock,
+  Calendar,
   CheckCircle2,
   AlertTriangle,
   CreditCard,
   Plus,
-  ShieldCheck,
-  Check,
   X,
-  TrendingUp,
   DollarSign,
-  Briefcase,
-  Layers,
-  Sparkles
+  Briefcase
 } from "lucide-react";
 import { Employee, Contract, AttendanceRecord, TimeOffRequest } from "@/types/hr";
 
@@ -38,14 +30,12 @@ export const EmployeeProfile: React.FC<EmployeeProfileProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<"overview" | "contracts" | "attendance" | "time-off" | "payroll">("overview");
   
-  // Attendance punch modal state
   const [isPunchModalOpen, setIsPunchModalOpen] = useState(false);
   const [punchDate, setPunchDate] = useState(new Date().toISOString().split("T")[0]);
   const [punchWorkedHours, setPunchWorkedHours] = useState("8.0");
   const [punchOvertimeHours, setPunchOvertimeHours] = useState("2.0");
   const [punchNotes, setPunchNotes] = useState("Sprint release deadline");
 
-  // Leave request modal state
   const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
   const [leaveType, setLeaveType] = useState<"VACATION" | "SICK" | "UNPAID">("VACATION");
   const [leaveStart, setLeaveStart] = useState("2026-09-01");
@@ -56,15 +46,10 @@ export const EmployeeProfile: React.FC<EmployeeProfileProps> = ({
   const activeContract = employee.contracts?.find(c => c.status === "ACTIVE");
   const isCompliant = Boolean(employee.bank_account_no && employee.tax_id);
 
-  // Total Overtime calculation
   const totalOvertime = (employee.attendances || []).reduce((acc, curr) => acc + (curr.overtime_hours || 0), 0);
-  const totalWorkedHours = (employee.attendances || []).reduce((acc, curr) => acc + (curr.worked_hours || 0), 0);
-
-  // Leave Balance summary
   const vacationAlloc = employee.leave_allocations?.find(a => a.time_off_code === "VACATION");
   const remainingVacation = vacationAlloc ? vacationAlloc.allocated_days - vacationAlloc.taken_days : 0;
 
-  // Add Attendance Punch Handler
   const handleAddPunch = (e: React.FormEvent) => {
     e.preventDefault();
     const newRecord: AttendanceRecord = {
@@ -79,15 +64,13 @@ export const EmployeeProfile: React.FC<EmployeeProfileProps> = ({
       notes: punchNotes || null
     };
 
-    const updatedAttendances = [newRecord, ...(employee.attendances || [])];
     onUpdateEmployee({
       ...employee,
-      attendances: updatedAttendances
+      attendances: [newRecord, ...(employee.attendances || [])]
     });
     setIsPunchModalOpen(false);
   };
 
-  // Add Time Off Request Handler
   const handleAddLeave = (e: React.FormEvent) => {
     e.preventDefault();
     const typeNames: Record<string, string> = {
@@ -109,15 +92,13 @@ export const EmployeeProfile: React.FC<EmployeeProfileProps> = ({
       status: "APPROVED"
     };
 
-    const updatedRequests = [newRequest, ...(employee.leave_requests || [])];
     onUpdateEmployee({
       ...employee,
-      leave_requests: updatedRequests
+      leave_requests: [newRequest, ...(employee.leave_requests || [])]
     });
     setIsLeaveModalOpen(false);
   };
 
-  // Quick Approve/Refuse handler
   const handleToggleLeaveStatus = (reqId: number, status: "APPROVED" | "REFUSED") => {
     const updated = (employee.leave_requests || []).map(r => {
       if (r.id === reqId) return { ...r, status };
@@ -131,7 +112,6 @@ export const EmployeeProfile: React.FC<EmployeeProfileProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Top Navigation Back Button & Action Controls */}
       <div className="flex items-center justify-between gap-4">
         <button
           onClick={onBack}
@@ -159,7 +139,6 @@ export const EmployeeProfile: React.FC<EmployeeProfileProps> = ({
         </div>
       </div>
 
-      {/* Main Profile Header Card */}
       <div className="bg-white rounded-3xl border border-slate-200/80 p-6 md:p-8 shadow-xs relative overflow-hidden">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="flex items-center gap-5">
@@ -182,11 +161,6 @@ export const EmployeeProfile: React.FC<EmployeeProfileProps> = ({
                 >
                   {employee.status === "ACTIVE" ? "Active Full-Time" : "On Leave"}
                 </span>
-                {employee.id === 1 && (
-                  <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 text-[10px] font-mono font-bold">
-                    HERO WALKTHROUGH
-                  </span>
-                )}
               </div>
               <p className="text-sm font-medium text-slate-600 mt-1">
                 {employee.job_position} • <span className="text-slate-400">{employee.department}</span>
@@ -198,7 +172,6 @@ export const EmployeeProfile: React.FC<EmployeeProfileProps> = ({
             </div>
           </div>
 
-          {/* Payroll Preflight Compliance Status Callout */}
           <div className="w-full md:w-auto bg-slate-50 border border-slate-200 rounded-2xl p-4 flex items-center justify-between md:flex-col md:items-end gap-2 text-right">
             <div className="text-left md:text-right">
               <span className="text-[10px] font-mono uppercase text-slate-400 font-semibold block">
@@ -220,7 +193,6 @@ export const EmployeeProfile: React.FC<EmployeeProfileProps> = ({
           </div>
         </div>
 
-        {/* Operational Inputs Summary Strip */}
         <div className="mt-6 pt-6 border-t border-slate-100 grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
           <div className="bg-slate-50/70 p-3.5 rounded-2xl border border-slate-100">
             <span className="text-[10px] font-mono uppercase text-slate-400">Active Wage Base</span>
@@ -256,7 +228,6 @@ export const EmployeeProfile: React.FC<EmployeeProfileProps> = ({
         </div>
       </div>
 
-      {/* Tabs Navigation Bar */}
       <div className="flex items-center gap-1.5 border-b border-slate-200 overflow-x-auto text-xs font-medium">
         <button
           onClick={() => setActiveTab("overview")}
@@ -319,10 +290,8 @@ export const EmployeeProfile: React.FC<EmployeeProfileProps> = ({
         </button>
       </div>
 
-      {/* TAB CONTENT: 1. OVERVIEW & STATUTORY */}
       {activeTab === "overview" && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Job & Organization Card */}
           <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-4">
             <h3 className="font-display font-semibold text-base text-[#0F2F1E] flex items-center gap-2">
               <Briefcase className="w-4 h-4 text-emerald-700" />
@@ -353,7 +322,6 @@ export const EmployeeProfile: React.FC<EmployeeProfileProps> = ({
             </div>
           </div>
 
-          {/* Statutory, Bank & Tax Card */}
           <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="font-display font-semibold text-base text-[#0F2F1E] flex items-center gap-2">
@@ -402,16 +370,13 @@ export const EmployeeProfile: React.FC<EmployeeProfileProps> = ({
         </div>
       )}
 
-      {/* TAB CONTENT: 2. CONTRACTS */}
       {activeTab === "contracts" && (
         <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-display font-semibold text-base text-[#0F2F1E]">Period Contracts</h3>
-              <p className="text-xs text-slate-500">
-                Payroll calculation resolves the active contract applicable to the selected period.
-              </p>
-            </div>
+          <div>
+            <h3 className="font-display font-semibold text-base text-[#0F2F1E]">Period Contracts</h3>
+            <p className="text-xs text-slate-500">
+              Payroll calculation resolves the active contract applicable to the selected period.
+            </p>
           </div>
 
           <div className="space-y-3">
@@ -448,7 +413,6 @@ export const EmployeeProfile: React.FC<EmployeeProfileProps> = ({
         </div>
       )}
 
-      {/* TAB CONTENT: 3. ATTENDANCE & OVERTIME */}
       {activeTab === "attendance" && (
         <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -469,7 +433,6 @@ export const EmployeeProfile: React.FC<EmployeeProfileProps> = ({
             </button>
           </div>
 
-          {/* Overtime Highlight Banner */}
           <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 flex items-center justify-between flex-wrap gap-3">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold">
@@ -487,7 +450,6 @@ export const EmployeeProfile: React.FC<EmployeeProfileProps> = ({
             </span>
           </div>
 
-          {/* Attendance Table */}
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
@@ -539,7 +501,6 @@ export const EmployeeProfile: React.FC<EmployeeProfileProps> = ({
         </div>
       )}
 
-      {/* TAB CONTENT: 4. TIME OFF & APPROVALS */}
       {activeTab === "time-off" && (
         <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -560,7 +521,6 @@ export const EmployeeProfile: React.FC<EmployeeProfileProps> = ({
             </button>
           </div>
 
-          {/* Allocation Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {(employee.leave_allocations || []).map(alloc => (
               <div key={alloc.id} className="p-4 rounded-2xl border border-slate-200 bg-slate-50/50 space-y-2">
@@ -586,7 +546,6 @@ export const EmployeeProfile: React.FC<EmployeeProfileProps> = ({
             ))}
           </div>
 
-          {/* Leave Requests Table with Approve/Reject */}
           <div className="space-y-3">
             <h4 className="text-xs font-semibold text-slate-900 uppercase font-mono tracking-wider">
               Submitted Requests
@@ -662,7 +621,6 @@ export const EmployeeProfile: React.FC<EmployeeProfileProps> = ({
         </div>
       )}
 
-      {/* TAB CONTENT: 5. PAYROLL LINKS */}
       {activeTab === "payroll" && (
         <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-6">
           <div>
@@ -730,7 +688,6 @@ export const EmployeeProfile: React.FC<EmployeeProfileProps> = ({
         </div>
       )}
 
-      {/* LOG ATTENDANCE PUNCH MODAL */}
       {isPunchModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs">
           <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-md w-full p-6 space-y-4">
@@ -781,7 +738,7 @@ export const EmployeeProfile: React.FC<EmployeeProfileProps> = ({
                   type="text"
                   value={punchNotes}
                   onChange={(e) => setPunchNotes(e.target.value)}
-                  placeholder="e.g. Sprint release deadline"
+                  placeholder="Sprint release deadline"
                   className="w-full px-3 py-2 rounded-xl border border-slate-200"
                 />
               </div>
@@ -805,7 +762,6 @@ export const EmployeeProfile: React.FC<EmployeeProfileProps> = ({
         </div>
       )}
 
-      {/* REQUEST TIME OFF MODAL */}
       {isLeaveModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs">
           <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-md w-full p-6 space-y-4">
@@ -867,7 +823,7 @@ export const EmployeeProfile: React.FC<EmployeeProfileProps> = ({
                   type="text"
                   value={leaveReason}
                   onChange={(e) => setLeaveReason(e.target.value)}
-                  placeholder="e.g. Annual summer holiday"
+                  placeholder="Annual summer holiday"
                   className="w-full px-3 py-2 rounded-xl border border-slate-200"
                 />
               </div>

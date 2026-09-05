@@ -95,8 +95,6 @@ export interface Employee {
   tax_id?: string | null;
   joining_date?: string;
   avatar_url?: string;
-  
-  // Relations
   contracts?: Contract[];
   attendances?: AttendanceRecord[];
   leave_allocations?: LeaveAllocation[];

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { ReactNode } from "react";
+import React, { ReactNode, useState } from "react";
 import {
   Users,
   FileText,
@@ -8,13 +8,9 @@ import {
   Calendar,
   Calculator,
   ShieldCheck,
-  Search,
   Bell,
   CheckCircle2,
   ChevronRight,
-  LogOut,
-  Sparkles,
-  Layers,
   Menu,
   X
 } from "lucide-react";
@@ -33,10 +29,9 @@ export const AppShell: React.FC<AppShellProps> = ({
   activeNav,
   onNavigate,
   title,
-  subtitle,
   breadcrumbs
 }) => {
-  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navItems = [
     { id: "employees", label: "Employees", icon: Users, badge: "5", group: "HR Operations" },
@@ -49,9 +44,7 @@ export const AppShell: React.FC<AppShellProps> = ({
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] flex flex-col md:flex-row antialiased font-sans">
-      {/* Sidebar - Desktop */}
       <aside className="hidden md:flex w-64 flex-col border-r border-slate-200 bg-white shadow-sm z-30">
-        {/* Brand Header */}
         <div className="h-16 px-5 border-b border-slate-100 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-[#0F2F1E] text-[#9FD067] flex items-center justify-center font-bold shadow-sm">
@@ -68,9 +61,7 @@ export const AppShell: React.FC<AppShellProps> = ({
           </div>
         </div>
 
-        {/* Navigation Links */}
         <div className="flex-1 py-4 px-3 space-y-6 overflow-y-auto">
-          {/* Groups */}
           <div>
             <div className="px-3 text-[11px] font-mono font-semibold uppercase tracking-wider text-slate-400 mb-2">
               HR Operations
@@ -169,7 +160,6 @@ export const AppShell: React.FC<AppShellProps> = ({
           </div>
         </div>
 
-        {/* Current Active Persona Widget */}
         <div className="p-3 border-t border-slate-100 bg-slate-50/50">
           <div className="p-2.5 rounded-xl bg-white border border-slate-200 flex items-center justify-between shadow-xs">
             <div className="flex items-center gap-2.5">
@@ -186,7 +176,6 @@ export const AppShell: React.FC<AppShellProps> = ({
         </div>
       </aside>
 
-      {/* Mobile Top Header */}
       <div className="md:hidden h-16 bg-white border-b border-slate-200 px-4 flex items-center justify-between z-40 sticky top-0">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-lg bg-[#0F2F1E] text-[#9FD067] flex items-center justify-center font-bold text-xs">
@@ -202,7 +191,6 @@ export const AppShell: React.FC<AppShellProps> = ({
         </button>
       </div>
 
-      {/* Mobile Menu Dropdown */}
       {mobileMenuOpen && (
         <div className="md:hidden bg-white border-b border-slate-200 p-4 space-y-2 z-40">
           {navItems.map((item) => (
@@ -227,11 +215,8 @@ export const AppShell: React.FC<AppShellProps> = ({
         </div>
       )}
 
-      {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Top Header Bar */}
         <header className="h-16 border-b border-slate-200 bg-white/80 backdrop-blur-md px-6 flex items-center justify-between sticky top-0 z-20">
-          {/* Breadcrumbs / Page Title */}
           <div className="flex items-center gap-2 text-xs">
             <span className="font-medium text-slate-400">PeoplePay360</span>
             <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
@@ -256,7 +241,6 @@ export const AppShell: React.FC<AppShellProps> = ({
             )}
           </div>
 
-          {/* Top Actions & Notification */}
           <div className="flex items-center gap-3">
             <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-semibold">
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
@@ -269,7 +253,6 @@ export const AppShell: React.FC<AppShellProps> = ({
           </div>
         </header>
 
-        {/* Dynamic Page Content Body */}
         <div className="flex-1 p-6 md:p-8 max-w-7xl w-full mx-auto space-y-6">
           {children}
         </div>
