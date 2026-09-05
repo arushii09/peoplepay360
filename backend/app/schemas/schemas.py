@@ -110,7 +110,26 @@ class AttendanceResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class ContractResponse(BaseModel):
+class ContractCreate(BaseModel):
+    name: str
+    employee_id: int
+    start_date: pydate
+    end_date: Optional[pydate] = None
+    wage: float
+    salary_structure_id: int
+    status: ContractStatus = ContractStatus.DRAFT
+
+
+class ContractUpdate(BaseModel):
+    name: Optional[str] = None
+    start_date: Optional[pydate] = None
+    end_date: Optional[pydate] = None
+    wage: Optional[float] = None
+    salary_structure_id: Optional[int] = None
+    status: Optional[ContractStatus] = None
+
+
+class ContractOut(BaseModel):
     id: int
     name: str
     employee_id: int
@@ -123,8 +142,11 @@ class ContractResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+ContractResponse = ContractOut
+
+
 # ==========================================
-# 4. EMPLOYEE SCHEMAS
+# 4. EMPLOYEE SCHEMAS (MODULE 3)
 # ==========================================
 
 class EmployeeBase(BaseModel):
@@ -134,6 +156,8 @@ class EmployeeBase(BaseModel):
     phone: Optional[str] = None
     department: Optional[str] = None
     job_position: Optional[str] = None
+    manager_id: Optional[int] = None
+    schedule_id: Optional[int] = None
     status: str = "ACTIVE"
     bank_account_no: Optional[str] = None
     bank_name: Optional[str] = None
@@ -142,18 +166,61 @@ class EmployeeBase(BaseModel):
 
 
 class EmployeeCreate(EmployeeBase):
+    """
+    Schema for creating a new Employee record.
+    Required fields: first_name, last_name, email, department, job_position.
+    """
     user_id: Optional[int] = None
+    first_name: str
+    last_name: str
+    email: EmailStr
+    department: str
+    job_position: str
+
+
+class EmployeeUpdate(BaseModel):
+    """
+    Schema for updating existing Employee profile information.
+    All fields are optional to support partial updates via PUT/PATCH.
+    """
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    phone: Optional[str] = None
+    department: Optional[str] = None
+    job_position: Optional[str] = None
     manager_id: Optional[int] = None
     schedule_id: Optional[int] = None
+    status: Optional[str] = None
+    bank_account_no: Optional[str] = None
+    bank_name: Optional[str] = None
+    ifsc_code: Optional[str] = None
+    tax_id: Optional[str] = None
 
 
-class EmployeeResponse(EmployeeBase):
+class EmployeeOut(EmployeeBase):
+    """
+    Output representation of Employee record.
+    """
     id: int
     user_id: Optional[int] = None
-    manager_id: Optional[int] = None
-    schedule_id: Optional[int] = None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+EmployeeResponse = EmployeeOut
+
+
+class SmartCountsOut(BaseModel):
+    """
+    Live summary counter counts for employee UI header badges.
+    """
+    active_contracts_count: int
+    attendance_days_this_month: int
+    remaining_leave_balance: float
+
+
+SmartBadgeCountsOut = SmartCountsOut
 
 
 # ==========================================
