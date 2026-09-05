@@ -8,22 +8,27 @@ from app.core.config import settings
 from app.db.session import get_db
 from app.models.models import User, UserRole
 
-reusable_oauth2 = OAuth2PasswordBearer(
+
+oauth2_scheme = OAuth2PasswordBearer(
     tokenUrl=f"{settings.API_V1_STR}/auth/login"
 )
 
 
 def get_current_user(
     db: Session = Depends(get_db),
-    token: str = Depends(reusable_oauth2)
+    token: str = Depends(oauth2_scheme)
 ) -> User:
-    """Validate JWT token and return active current user."""
+    """
+    FastAPI dependency validating the JWT token and returning the current authenticated active user.
+    Raises HTTP 401 if token invalid/expired, or HTTP 400 if user account disabled.
+    """
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
+        detail="Could not validate authentication credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
+        
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         email: str = payload.get("sub")
         if email is None:
@@ -31,6 +36,7 @@ def get_current_user(
     except JWTError:
         raise credentials_exception
 
+    
     user = db.query(User).filter(User.email == email).first()
     if user is None:
         raise credentials_exception
@@ -43,12 +49,12 @@ def get_current_user(
 
 
 def require_roles(allowed_roles: List[UserRole]):
-    """Dependency generator enforcing Role-Based Access Control (RBAC)."""
+    
     def role_checker(current_user: User = Depends(get_current_user)) -> User:
         if current_user.role not in allowed_roles:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Permission denied: user role '{current_user.role.value}' lacks required permissions."
+                detail=f"Permission denied: User role '{current_user.role.value}' lacks required privileges."
             )
         return current_user
 
