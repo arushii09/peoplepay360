@@ -15,15 +15,13 @@ from sqlalchemy import (
     String,
     Text,
 )
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-
-class Base(DeclarativeBase):
-    pass
+from app.db.session import Base
 
 
 # ==========================================
-# 1. ENUM DEFINITIONS
+# 1. DOMAIN ENUMS
 # ==========================================
 
 class UserRole(str, PyEnum):
@@ -82,13 +80,18 @@ class PayrunStatus(str, PyEnum):
 
 
 # ==========================================
-# 2. BE-1: HR MASTER DATA MODELS
+# 2. HR MASTER DATA MODELS (BE-1)
 # ==========================================
 
 class User(Base):
+    """
+    User model for authentication and system access.
+    Stores login credentials and role privileges.
+    """
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    # Index on email speeds up lookup queries during login
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
     full_name: Mapped[str] = mapped_column(String(255), nullable=False)
@@ -96,27 +99,36 @@ class User(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
 
-    # Relationships
+    # 1-to-1 relationship with Employee profile (uselist=False enforces 1-to-1 mapping)
     employee: Mapped[Optional["Employee"]] = relationship("Employee", back_populates="user", uselist=False)
 
 
 class WorkingSchedule(Base):
+    """
+    Defines working hours and daily patterns (e.g. 40h Mon-Fri).
+    """
     __tablename__ = "working_schedules"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     schedule_type: Mapped[str] = mapped_column(String(100), default="FULL_TIME", nullable=False)
     weekly_hours: Mapped[float] = mapped_column(Float, default=40.0, nullable=False)
+    # Stores weekday breakdown JSON: start, end, break hours per day
     pattern_json: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
 
-    # Relationships
+    # Employees assigned to this work schedule
     employees: Mapped[List["Employee"]] = relationship("Employee", back_populates="schedule")
 
 
 class Employee(Base):
+    """
+    Central HR Employee profile.
+    Connects users to contracts, attendance records, leaves, and payslips.
+    """
     __tablename__ = "employees"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    # Foreign key to User account (nullable for external/contract employees without login)
     user_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), unique=True, nullable=True)
     first_name: Mapped[str] = mapped_column(String(255), nullable=False)
     last_name: Mapped[str] = mapped_column(String(255), nullable=False)
@@ -124,9 +136,13 @@ class Employee(Base):
     phone: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
     department: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     job_position: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    
+    # Self-referencing foreign key for org hierarchy (manager -> subordinates)
     manager_id: Mapped[Optional[int]] = mapped_column(ForeignKey("employees.id"), nullable=True)
     schedule_id: Mapped[Optional[int]] = mapped_column(ForeignKey("working_schedules.id"), nullable=True)
     status: Mapped[str] = mapped_column(String(50), default="ACTIVE", nullable=False)
+    
+    # Financial & Tax details required for payroll validation
     bank_account_no: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     bank_name: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     ifsc_code: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
@@ -135,8 +151,12 @@ class Employee(Base):
     # Relationships
     user: Mapped[Optional["User"]] = relationship("User", back_populates="employee")
     schedule: Mapped[Optional["WorkingSchedule"]] = relationship("WorkingSchedule", back_populates="employees")
+    
+    # remote_side=[id] tells SQLAlchemy manager_id points to another Employee instance in self-referencing hierarchy
     manager: Mapped[Optional["Employee"]] = relationship("Employee", remote_side=[id], back_populates="subordinates")
     subordinates: Mapped[List["Employee"]] = relationship("Employee", back_populates="manager")
+
+    # cascade="all, delete-orphan" automatically cleans up child records when an employee is deleted to prevent orphan rows
     contracts: Mapped[List["Contract"]] = relationship("Contract", back_populates="employee", cascade="all, delete-orphan")
     attendances: Mapped[List["Attendance"]] = relationship("Attendance", back_populates="employee", cascade="all, delete-orphan")
     leave_allocations: Mapped[List["LeaveAllocation"]] = relationship("LeaveAllocation", back_populates="employee", cascade="all, delete-orphan")
@@ -145,6 +165,9 @@ class Employee(Base):
 
 
 class TimeOffType(Base):
+    """
+    Catalog of leave types (e.g., Vacation, Sick Leave, Unpaid Leave).
+    """
     __tablename__ = "time_off_types"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
@@ -153,12 +176,14 @@ class TimeOffType(Base):
     is_paid: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     requires_allocation: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
-    # Relationships
     allocations: Mapped[List["LeaveAllocation"]] = relationship("LeaveAllocation", back_populates="time_off_type", cascade="all, delete-orphan")
     requests: Mapped[List["TimeOffRequest"]] = relationship("TimeOffRequest", back_populates="time_off_type", cascade="all, delete-orphan")
 
 
 class LeaveAllocation(Base):
+    """
+    Annual leave allowance allocated to an employee for a specific leave type.
+    """
     __tablename__ = "leave_allocations"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
@@ -168,12 +193,14 @@ class LeaveAllocation(Base):
     taken_days: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
     year: Mapped[int] = mapped_column(Integer, nullable=False)
 
-    # Relationships
     employee: Mapped["Employee"] = relationship("Employee", back_populates="leave_allocations")
     time_off_type: Mapped["TimeOffType"] = relationship("TimeOffType", back_populates="allocations")
 
 
 class TimeOffRequest(Base):
+    """
+    Employee leave applications submitted for approval.
+    """
     __tablename__ = "time_off_requests"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
@@ -185,12 +212,14 @@ class TimeOffRequest(Base):
     reason: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     status: Mapped[LeaveStatus] = mapped_column(Enum(LeaveStatus), default=LeaveStatus.PENDING, nullable=False)
 
-    # Relationships
     employee: Mapped["Employee"] = relationship("Employee", back_populates="leave_requests")
     time_off_type: Mapped["TimeOffType"] = relationship("TimeOffType", back_populates="requests")
 
 
 class Attendance(Base):
+    """
+    Daily check-in and check-out tracking for work and overtime hours.
+    """
     __tablename__ = "attendances"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
@@ -203,15 +232,17 @@ class Attendance(Base):
     status: Mapped[AttendanceStatus] = mapped_column(Enum(AttendanceStatus), default=AttendanceStatus.NORMAL, nullable=False)
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
-    # Relationships
     employee: Mapped["Employee"] = relationship("Employee", back_populates="attendances")
 
 
 # ==========================================
-# 3. BE-2: PAYROLL MODELS
+# 3. PAYROLL ENGINE MODELS (BE-2)
 # ==========================================
 
 class SalaryStructure(Base):
+    """
+    Defines a salary template (e.g. CORP_EXEC_2026) containing ordered calculation rules.
+    """
     __tablename__ = "salary_structures"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
@@ -222,7 +253,7 @@ class SalaryStructure(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
-    # Relationships
+    # Order rules by sequence number during retrieval (e.g. BASIC=10, HRA=20, GROSS=40, PF=50, NET=100)
     rules: Mapped[List["SalaryRule"]] = relationship(
         "SalaryRule",
         back_populates="structure",
@@ -234,6 +265,9 @@ class SalaryStructure(Base):
 
 
 class SalaryRule(Base):
+    """
+    Individual pay components (e.g. BASIC, HRA, PF) computed sequentially using Python expressions.
+    """
     __tablename__ = "salary_rules"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
@@ -257,7 +291,6 @@ class SalaryRule(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
-    # Relationships
     structure: Mapped["SalaryStructure"] = relationship("SalaryStructure", back_populates="rules")
 
 
@@ -273,13 +306,15 @@ class Contract(Base):
     salary_structure_id: Mapped[int] = mapped_column(ForeignKey("salary_structures.id"), nullable=False)
     status: Mapped[ContractStatus] = mapped_column(Enum(ContractStatus), default=ContractStatus.DRAFT, nullable=False)
 
-    # Relationships
     employee: Mapped["Employee"] = relationship("Employee", back_populates="contracts")
     salary_structure: Mapped["SalaryStructure"] = relationship("SalaryStructure", back_populates="contracts")
     payslips: Mapped[List["Payslip"]] = relationship("Payslip", back_populates="contract")
 
 
 class Payrun(Base):
+    """
+    Monthly payroll processing batch containing payslips for all eligible employees.
+    """
     __tablename__ = "payruns"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
@@ -293,12 +328,14 @@ class Payrun(Base):
     total_net: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
 
-    # Relationships
     salary_structure: Mapped["SalaryStructure"] = relationship("SalaryStructure", back_populates="payruns")
     payslips: Mapped[List["Payslip"]] = relationship("Payslip", back_populates="payrun", cascade="all, delete-orphan")
 
 
 class Payslip(Base):
+    """
+    Individual payslip generated for an employee during a payrun batch.
+    """
     __tablename__ = "payslips"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
@@ -314,9 +351,10 @@ class Payslip(Base):
     gross_wage: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
     total_deductions: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
     net_wage: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
+    
+    # Stores validation alerts (e.g. missing bank account or tax ID) as JSON
     warnings_json: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
 
-    # Relationships
     payrun: Mapped["Payrun"] = relationship("Payrun", back_populates="payslips")
     employee: Mapped["Employee"] = relationship("Employee", back_populates="payslips")
     contract: Mapped["Contract"] = relationship("Contract", back_populates="payslips")
@@ -329,6 +367,9 @@ class Payslip(Base):
 
 
 class PayslipLine(Base):
+    """
+    Detailed breakdown line item on a payslip showing rate, amount, and calculation trace.
+    """
     __tablename__ = "payslip_lines"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
@@ -341,5 +382,4 @@ class PayslipLine(Base):
     amount: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
     calculation_trace: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
-    # Relationships
     payslip: Mapped["Payslip"] = relationship("Payslip", back_populates="lines")

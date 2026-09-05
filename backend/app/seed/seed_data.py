@@ -23,64 +23,41 @@ from app.models.models import (
 
 
 def seed_database():
-    """Create all database tables and populate initial seed data."""
-    print("Creating database tables...")
+    """
+    Populates database with realistic test data for Phase 1 development and testing.
+    Creates tables if they don't exist and seeds users, schedules, time off types,
+    salary structures, rules, and hero/problem employee records.
+    """
+    print("[1/6] Creating database tables...")
     Base.metadata.create_all(bind=engine)
     
     db = SessionLocal()
     try:
-        print("Seeding Users...")
-        users_data = [
-            {
-                "email": "admin@peoplepay.com",
-                "password": "admin123",
-                "full_name": "System Admin",
-                "role": UserRole.ADMIN,
-            },
-            {
-                "email": "hr@peoplepay.com",
-                "password": "hr123",
-                "full_name": "HR Manager",
-                "role": UserRole.HR_MANAGER,
-            },
-            {
-                "email": "payroll@peoplepay.com",
-                "password": "payroll123",
-                "full_name": "Payroll Manager",
-                "role": UserRole.HR_PAYROLL_MANAGER,
-            },
-            {
-                "email": "alex@peoplepay.com",
-                "password": "employee123",
-                "full_name": "Alex Vance",
-                "role": UserRole.EMPLOYEE,
-            },
-            {
-                "email": "bob@peoplepay.com",
-                "password": "employee123",
-                "full_name": "Bob Miller",
-                "role": UserRole.EMPLOYEE,
-            },
+        print("[2/6] Seeding system users with distinct roles...")
+        users_to_seed = [
+            {"email": "admin@peoplepay.com", "password": "admin123", "full_name": "System Admin", "role": UserRole.ADMIN},
+            {"email": "hr@peoplepay.com", "password": "hr123", "full_name": "HR Manager", "role": UserRole.HR_MANAGER},
+            {"email": "payroll@peoplepay.com", "password": "payroll123", "full_name": "Payroll Manager", "role": UserRole.HR_PAYROLL_MANAGER},
+            {"email": "alex@peoplepay.com", "password": "employee123", "full_name": "Alex Vance", "role": UserRole.EMPLOYEE},
+            {"email": "bob@peoplepay.com", "password": "employee123", "full_name": "Bob Miller", "role": UserRole.EMPLOYEE},
         ]
         
-        user_objects = {}
-        for u in users_data:
-            existing = db.query(User).filter(User.email == u["email"]).first()
-            if not existing:
-                user_obj = User(
+        user_records = {}
+        for u in users_to_seed:
+            user = db.query(User).filter(User.email == u["email"]).first()
+            if not user:
+                user = User(
                     email=u["email"],
                     hashed_password=get_password_hash(u["password"]),
                     full_name=u["full_name"],
                     role=u["role"],
                     is_active=True
                 )
-                db.add(user_obj)
+                db.add(user)
                 db.flush()
-                user_objects[u["email"]] = user_obj
-            else:
-                user_objects[u["email"]] = existing
+            user_records[u["email"]] = user
         
-        print("Seeding Working Schedule...")
+        print("[3/6] Seeding default 40h working schedule...")
         schedule = db.query(WorkingSchedule).filter(WorkingSchedule.name == "Standard 40h Schedule").first()
         if not schedule:
             schedule = WorkingSchedule(
@@ -98,39 +75,37 @@ def seed_database():
             db.add(schedule)
             db.flush()
 
-        print("Seeding Time Off Types...")
-        time_off_types_data = [
+        print("[4/6] Seeding time off categories...")
+        time_off_data = [
             {"name": "Paid Annual Leave", "code": "VACATION", "is_paid": True, "requires_allocation": True},
             {"name": "Sick Leave", "code": "SICK", "is_paid": True, "requires_allocation": True},
             {"name": "Unpaid Leave", "code": "UNPAID", "is_paid": False, "requires_allocation": False},
         ]
         
-        tot_objects = {}
-        for tot in time_off_types_data:
-            existing = db.query(TimeOffType).filter(TimeOffType.code == tot["code"]).first()
-            if not existing:
+        time_off_records = {}
+        for tot in time_off_data:
+            tot_obj = db.query(TimeOffType).filter(TimeOffType.code == tot["code"]).first()
+            if not tot_obj:
                 tot_obj = TimeOffType(**tot)
                 db.add(tot_obj)
                 db.flush()
-                tot_objects[tot["code"]] = tot_obj
-            else:
-                tot_objects[tot["code"]] = existing
+            time_off_records[tot["code"]] = tot_obj
 
-        print("Seeding Salary Structure and Rules...")
-        structure = db.query(SalaryStructure).filter(SalaryStructure.code == "CORP_EXEC_2026").first()
-        if not structure:
-            structure = SalaryStructure(
+        print("[5/6] Seeding salary structure (CORP_EXEC_2026) & 6 sequenced calculation rules...")
+        salary_structure = db.query(SalaryStructure).filter(SalaryStructure.code == "CORP_EXEC_2026").first()
+        if not salary_structure:
+            salary_structure = SalaryStructure(
                 name="Standard Corporate Executive 2026",
                 code="CORP_EXEC_2026",
                 description="Standard Executive Salary Structure for 2026",
                 is_active=True
             )
-            db.add(structure)
+            db.add(salary_structure)
             db.flush()
 
             rules_data = [
                 {
-                    "structure_id": structure.id,
+                    "structure_id": salary_structure.id,
                     "name": "Basic Salary",
                     "code": "BASIC",
                     "category": RuleCategory.BASIC,
@@ -140,7 +115,7 @@ def seed_database():
                     "is_active": True,
                 },
                 {
-                    "structure_id": structure.id,
+                    "structure_id": salary_structure.id,
                     "name": "House Rent Allowance",
                     "code": "HRA",
                     "category": RuleCategory.ALLOWANCE,
@@ -150,7 +125,7 @@ def seed_database():
                     "is_active": True,
                 },
                 {
-                    "structure_id": structure.id,
+                    "structure_id": salary_structure.id,
                     "name": "Dearness Allowance",
                     "code": "DA",
                     "category": RuleCategory.ALLOWANCE,
@@ -163,7 +138,7 @@ def seed_database():
                     # Overtime Pay: fixed_amount = multiplier (1.5 = time-and-a-half).
                     # The engine will calculate: overtime_hours * hourly_rate * 1.5
                     # hourly_rate = contract.wage / 160  (20 working days × 8 hours)
-                    "structure_id": structure.id,
+                    "structure_id": salary_structure.id,
                     "name": "Overtime Pay",
                     "code": "OT_PAY",
                     "category": RuleCategory.ALLOWANCE,
@@ -176,7 +151,7 @@ def seed_database():
                     # Leave Deduction: deducts salary for approved unpaid leave days.
                     # Engine calculates: unpaid_leave_days * (contract.wage / 26)
                     # 26 = standard working days per month.
-                    "structure_id": structure.id,
+                    "structure_id": salary_structure.id,
                     "name": "Unpaid Leave Deduction",
                     "code": "LEAVE_DED",
                     "category": RuleCategory.DEDUCTION,
@@ -185,7 +160,7 @@ def seed_database():
                     "is_active": True,
                 },
                 {
-                    "structure_id": structure.id,
+                    "structure_id": salary_structure.id,
                     "name": "Gross Wage",
                     "code": "GROSS",
                     "category": RuleCategory.GROSS,
@@ -195,7 +170,7 @@ def seed_database():
                     "is_active": True,
                 },
                 {
-                    "structure_id": structure.id,
+                    "structure_id": salary_structure.id,
                     "name": "Provident Fund",
                     "code": "PF",
                     "category": RuleCategory.DEDUCTION,
@@ -205,7 +180,7 @@ def seed_database():
                     "is_active": True,
                 },
                 {
-                    "structure_id": structure.id,
+                    "structure_id": salary_structure.id,
                     "name": "Net Wage",
                     "code": "NET",
                     "category": RuleCategory.NET,
@@ -219,12 +194,13 @@ def seed_database():
                 db.add(SalaryRule(**r))
             db.flush()
 
-        print("Seeding Hero Employee (Alex Vance)...")
+        print("[6/6] Seeding realistic Hero and Problem employee records...")
+        
+        # 1. Hero Employee: Alex Vance (Complete record, valid bank details, active contract, leave, attendances)
         alex_emp = db.query(Employee).filter(Employee.email == "alex@peoplepay.com").first()
         if not alex_emp:
-            alex_user = user_objects["alex@peoplepay.com"]
             alex_emp = Employee(
-                user_id=alex_user.id,
+                user_id=user_records["alex@peoplepay.com"].id,
                 first_name="Alex",
                 last_name="Vance",
                 email="alex@peoplepay.com",
@@ -241,43 +217,40 @@ def seed_database():
             db.add(alex_emp)
             db.flush()
 
-            # Active Contract ($6000/mo)
-            alex_contract = Contract(
+            # Active Contract: $6,000 / month
+            db.add(Contract(
                 name="Alex Vance - Senior Engineer Contract",
                 employee_id=alex_emp.id,
                 start_date=date(2026, 1, 1),
                 wage=6000.0,
-                salary_structure_id=structure.id,
+                salary_structure_id=salary_structure.id,
                 status=ContractStatus.ACTIVE
-            )
-            db.add(alex_contract)
+            ))
 
-            # Leave Allocation (20 days)
-            vacation_tot = tot_objects["VACATION"]
-            alex_alloc = LeaveAllocation(
+            # 20 Annual Leave Days Allocated
+            vacation_type = time_off_records["VACATION"]
+            db.add(LeaveAllocation(
                 employee_id=alex_emp.id,
-                time_off_type_id=vacation_tot.id,
+                time_off_type_id=vacation_type.id,
                 allocated_days=20.0,
                 taken_days=2.0,
                 year=2026
-            )
-            db.add(alex_alloc)
+            ))
 
             # Approved 2-day Leave Request
-            alex_leave_req = TimeOffRequest(
+            db.add(TimeOffRequest(
                 employee_id=alex_emp.id,
-                time_off_type_id=vacation_tot.id,
+                time_off_type_id=vacation_type.id,
                 start_date=date(2026, 8, 10),
                 end_date=date(2026, 8, 11),
                 days=2.0,
                 reason="Summer Vacation",
                 status=LeaveStatus.APPROVED
-            )
-            db.add(alex_leave_req)
+            ))
 
             # 5 Days Attendance with Overtime
             for day_num in range(3, 8):
-                att = Attendance(
+                db.add(Attendance(
                     employee_id=alex_emp.id,
                     date=date(2026, 8, day_num),
                     check_in=datetime(2026, 8, day_num, 9, 0, 0),
@@ -286,16 +259,13 @@ def seed_database():
                     overtime_hours=1.5,
                     status=AttendanceStatus.OVERTIME,
                     notes="Sprint release overtime"
-                )
-                db.add(att)
-            db.flush()
+                ))
 
-        print("Seeding Problem Employee (Bob Miller)...")
+        # 2. Problem Employee: Bob Miller (Active contract $4,000/mo, but missing bank info to test payroll validation)
         bob_emp = db.query(Employee).filter(Employee.email == "bob@peoplepay.com").first()
         if not bob_emp:
-            bob_user = user_objects["bob@peoplepay.com"]
             bob_emp = Employee(
-                user_id=bob_user.id,
+                user_id=user_records["bob@peoplepay.com"].id,
                 first_name="Bob",
                 last_name="Miller",
                 email="bob@peoplepay.com",
@@ -304,7 +274,7 @@ def seed_database():
                 job_position="Sales Representative",
                 schedule_id=schedule.id,
                 status="ACTIVE",
-                bank_account_no=None,  # Intentionally missing bank details & tax ID
+                bank_account_no=None,  # Intentionally missing to trigger validation warnings
                 bank_name=None,
                 ifsc_code=None,
                 tax_id=None
@@ -312,20 +282,19 @@ def seed_database():
             db.add(bob_emp)
             db.flush()
 
-            # Active Contract ($4000/mo)
-            bob_contract = Contract(
+            # Active Contract: $4,000 / month
+            db.add(Contract(
                 name="Bob Miller - Sales Contract",
                 employee_id=bob_emp.id,
                 start_date=date(2026, 1, 1),
                 wage=4000.0,
-                salary_structure_id=structure.id,
+                salary_structure_id=salary_structure.id,
                 status=ContractStatus.ACTIVE
-            )
-            db.add(bob_contract)
-            db.flush()
+            ))
 
         db.commit()
         print("Database seed completed successfully!")
+
     except Exception as e:
         db.rollback()
         print(f"Error seeding database: {e}")
