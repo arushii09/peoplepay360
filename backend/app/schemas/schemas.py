@@ -13,8 +13,6 @@ from app.models.models import (
 )
 
 
-
-
 class UserBase(BaseModel):
     email: str
     full_name: str
@@ -36,9 +34,6 @@ class UserResponse(UserBase):
 class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
-
-
-
 
 
 
@@ -148,7 +143,6 @@ class AttendancePayrollSummary(BaseModel):
     attendance_days_count: int
     warnings: List[str] = []
 
-
 class ContractCreate(BaseModel):
     name: str
     employee_id: int
@@ -180,11 +174,7 @@ class ContractOut(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 ContractResponse = ContractOut
-
-
-
 
 class EmployeeBase(BaseModel):
     first_name: str
@@ -201,9 +191,11 @@ class EmployeeBase(BaseModel):
     ifsc_code: Optional[str] = None
     tax_id: Optional[str] = None
 
-
 class EmployeeCreate(EmployeeBase):
-   
+    """
+    Schema for creating a new Employee record.
+    Required fields: first_name, last_name, email, department, job_position.
+    """
     user_id: Optional[int] = None
     first_name: str
     last_name: str
@@ -213,7 +205,10 @@ class EmployeeCreate(EmployeeBase):
 
 
 class EmployeeUpdate(BaseModel):
-    
+    """
+    Schema for updating existing Employee profile information.
+    All fields are optional to support partial updates via PUT/PATCH.
+    """
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     email: Optional[str] = None
@@ -230,7 +225,9 @@ class EmployeeUpdate(BaseModel):
 
 
 class EmployeeOut(EmployeeBase):
-    
+    """
+    Output representation of Employee record.
+    """
     id: int
     user_id: Optional[int] = None
 
@@ -241,7 +238,9 @@ EmployeeResponse = EmployeeOut
 
 
 class SmartCountsOut(BaseModel):
-    
+    """
+    Live summary counter counts for employee UI header badges.
+    """
     active_contracts_count: int
     attendance_days_this_month: int
     remaining_leave_balance: float

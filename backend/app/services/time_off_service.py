@@ -17,14 +17,27 @@ from app.schemas.schemas import (
 )
 
 
+def list_time_off_types(db: Session) -> List[TimeOffType]:
+    """List all available time off types."""
+    return db.query(TimeOffType).all()
+
+
+def list_leave_allocations(db: Session, employee_id: Optional[int] = None) -> List[LeaveAllocation]:
+    """List leave allocations, optionally filtered by employee ID."""
+    query = db.query(LeaveAllocation)
+    if employee_id is not None:
+        query = query.filter(LeaveAllocation.employee_id == employee_id)
+    return query.all()
+
+
 def create_time_off_request(
     db: Session,
     payload: TimeOffRequestCreate,
     current_user: Optional[User] = None
 ) -> TimeOffRequest:
     """
-    Submits a new time-off application in PENDING status.
-    Calculates duration in days inclusively: (end_date - start_date).days + 1.
+    Submits a new time-off request in PENDING status.
+    Validates employee, leave type, date range, and remaining leave balance if allocation required.
     """
     # 1. Validate employee exists
     employee = db.query(Employee).filter(Employee.id == payload.employee_id).first()
@@ -49,15 +62,39 @@ def create_time_off_request(
             detail="start_date cannot be after end_date"
         )
 
-    # 4. Calculate inclusive calendar days
-    days = float((payload.end_date - payload.start_date).days + 1)
+    # 4. Calculate or use requested days
+    if payload.days and payload.days > 0:
+        requested_days = float(payload.days)
+    else:
+        requested_days = float((payload.end_date - payload.start_date).days + 1)
+
+    # 5. Check leave allocation balance if required
+    if leave_type.requires_allocation:
+        allocation = db.query(LeaveAllocation).filter(
+            LeaveAllocation.employee_id == payload.employee_id,
+            LeaveAllocation.time_off_type_id == payload.time_off_type_id,
+            LeaveAllocation.year == payload.start_date.year
+        ).first()
+
+        if not allocation:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Insufficient leave balance"
+            )
+
+        remaining = float(allocation.allocated_days - allocation.taken_days)
+        if requested_days > remaining:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Insufficient leave balance"
+            )
 
     new_request = TimeOffRequest(
         employee_id=payload.employee_id,
         time_off_type_id=payload.time_off_type_id,
         start_date=payload.start_date,
         end_date=payload.end_date,
-        days=days,
+        days=requested_days,
         reason=payload.reason,
         status=LeaveStatus.PENDING
     )
@@ -72,9 +109,7 @@ def list_time_off_requests(
     employee_id: Optional[int] = None,
     status_filter: Optional[LeaveStatus] = None
 ) -> List[TimeOffRequest]:
-    """
-    List leave requests with optional filtering by employee or approval status.
-    """
+    """List leave requests with optional filtering by employee or approval status."""
     query = db.query(TimeOffRequest)
     if employee_id is not None:
         query = query.filter(TimeOffRequest.employee_id == employee_id)
@@ -85,9 +120,7 @@ def list_time_off_requests(
 
 
 def get_time_off_request_by_id(db: Session, request_id: int) -> TimeOffRequest:
-    """
-    Retrieve single leave request by ID.
-    """
+    """Retrieve single leave request by ID."""
     request = db.query(TimeOffRequest).filter(TimeOffRequest.id == request_id).first()
     if not request:
         raise HTTPException(
@@ -103,8 +136,7 @@ def approve_time_off_request(
     current_user: Optional[User] = None
 ) -> TimeOffRequest:
     """
-    Transitions a leave request from PENDING to APPROVED.
-    Updates taken_days in LeaveAllocation if applicable.
+    Transitions a leave request to APPROVED and updates taken_days on LeaveAllocation.
     """
     leave_req = get_time_off_request_by_id(db, request_id)
 
@@ -135,11 +167,10 @@ def reject_time_off_request(
 ) -> TimeOffRequest:
     """
     Transitions a leave request to REFUSED.
-    Reverts taken_days in LeaveAllocation if request was previously approved.
+    Reverts taken_days if previously approved.
     """
     leave_req = get_time_off_request_by_id(db, request_id)
 
-    # If it was previously approved, revert allocation
     if leave_req.status == LeaveStatus.APPROVED:
         leave_type = db.query(TimeOffType).filter(TimeOffType.id == leave_req.time_off_type_id).first()
         if leave_type and leave_type.requires_allocation:
@@ -166,9 +197,7 @@ def get_time_off_payroll_summary(
 ) -> TimeOffPayrollSummary:
     """
     Internal service function for Payroll Engine.
-    CRITICAL: ONLY evaluates LeaveStatus.APPROVED requests.
-    Calculates approved days falling strictly within the period boundary,
-    splitting into paid_leave_days and unpaid_leave_days.
+    Evaluates LeaveStatus.APPROVED requests falling within period.
     """
     approved_requests = (
         db.query(TimeOffRequest)
@@ -186,13 +215,11 @@ def get_time_off_payroll_summary(
     unpaid_days = 0.0
 
     for req in approved_requests:
-        # Calculate days strictly overlapping the pay period
         eff_start = max(req.start_date, period_start)
         eff_end = min(req.end_date, period_end)
         overlap_days = float((eff_end - eff_start).days + 1)
 
         total_days += overlap_days
-        # Determine if paid or unpaid from TimeOffType
         time_off_type = db.query(TimeOffType).filter(TimeOffType.id == req.time_off_type_id).first()
         if time_off_type and not time_off_type.is_paid:
             unpaid_days += overlap_days
@@ -203,8 +230,8 @@ def get_time_off_payroll_summary(
         employee_id=employee_id,
         period_start=period_start,
         period_end=period_end,
-        total_approved_days=round(total_days, 2),
-        paid_leave_days=round(paid_days, 2),
-        unpaid_leave_days=round(unpaid_days, 2),
+        total_approved_days=total_days,
+        paid_leave_days=paid_days,
+        unpaid_leave_days=unpaid_days,
         approved_requests_count=len(approved_requests)
     )
