@@ -1,7 +1,7 @@
 "use client";
 
-import { PrismaHero } from "@/components/ui/prisma-hero";
+import { Example } from "@/components/ui/dashboard-with-collapsible-sidebar";
 
 export default function DemoOne() {
-  return <PrismaHero />;
+  return <Example />;
 }

@@ -11,20 +11,20 @@ const dmSans = DM_Sans({
 const fraunces = Fraunces({
   variable: "--font-fraunces",
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
+  weight: ["400", "600", "700", "900"],
+  style: ["normal", "italic"],
 });
 
 export const metadata: Metadata = {
   title: "PeoplePay360 - Connected HR & Explainable Payroll Platform",
-  description:
-    "Integrated HR and payroll system where employee activity converts directly into accurate, fully explainable payroll with real-time What-If simulation.",
+  description: "Integrated HR and Payroll System with deterministic rule calculation.",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html
       lang="en"
