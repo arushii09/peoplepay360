@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker
 
 from app.core.config import settings
 
-# Engine configuration with SQLite fallback compatibility
+#engine configuration
 connect_args = {}
 if settings.DATABASE_URL.startswith("sqlite"):
     connect_args = {"check_same_thread": False}

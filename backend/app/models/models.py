@@ -11,6 +11,7 @@ from sqlalchemy import (
     ForeignKey,
     Integer,
     JSON,
+    Numeric,
     String,
     Text,
 )
@@ -65,6 +66,11 @@ class RuleCategory(str, PyEnum):
 class ComputationType(str, PyEnum):
     FIXED = "FIXED"
     PERCENTAGE = "PERCENTAGE"
+    # Rules are evaluated in sequence; later rules may depend on earlier results.
+    # OVERTIME and LEAVE_DEDUCTION are explicit types so the engine knows exactly
+    # how to calculate them without parsing a formula string.
+    OVERTIME = "OVERTIME"
+    LEAVE_DEDUCTION = "LEAVE_DEDUCTION"
     PYTHON_EXPRESSION = "PYTHON_EXPRESSION"
 
 
@@ -213,6 +219,8 @@ class SalaryStructure(Base):
     code: Mapped[str] = mapped_column(String(100), unique=True, index=True, nullable=False)
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
     # Relationships
     rules: Mapped[List["SalaryRule"]] = relationship(
@@ -239,10 +247,15 @@ class SalaryRule(Base):
         default=ComputationType.PYTHON_EXPRESSION,
         nullable=False
     )
-    fixed_amount: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    percentage_value: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    # Numeric(12, 4) instead of Float: avoids floating-point rounding errors.
+    # Example: 6000.0 * 0.20 in Float = 1199.9999999999998. Numeric = exact 1200.0000.
+    # fixed_amount is used as: the flat value (FIXED), or the multiplier (OVERTIME, e.g. 1.5x).
+    fixed_amount: Mapped[Optional[float]] = mapped_column(Numeric(12, 4), nullable=True)
+    percentage_value: Mapped[Optional[float]] = mapped_column(Numeric(12, 4), nullable=True)
     formula: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
     # Relationships
     structure: Mapped["SalaryStructure"] = relationship("SalaryStructure", back_populates="rules")

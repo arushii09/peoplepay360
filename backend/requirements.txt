@@ -1,0 +1,28 @@
+# Core API framework
+fastapi==0.116.1
+uvicorn[standard]==0.35.0
+
+# Database
+sqlalchemy==2.0.51
+alembic==1.14.0
+
+# Validation & settings
+pydantic==2.11.7
+pydantic-settings==2.7.0
+python-dotenv==1.1.1
+
+# Auth
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+bcrypt==4.2.0
+python-multipart==0.0.12
+
+# PDF (Phase 9 - install now to avoid later setup issues)
+# weasyprint==62.3  # Uncomment when implementing PDF - requires OS-level deps
+
+# Testing
+pytest==8.3.5
+httpx==0.28.1
+
+# PostgreSQL driver (for production deployment)
+# psycopg2-binary==2.9.10  # Uncomment when deploying to PostgreSQL

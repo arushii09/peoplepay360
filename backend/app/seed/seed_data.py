@@ -160,13 +160,38 @@ def seed_database():
                     "is_active": True,
                 },
                 {
+                    # Overtime Pay: fixed_amount = multiplier (1.5 = time-and-a-half).
+                    # The engine will calculate: overtime_hours * hourly_rate * 1.5
+                    # hourly_rate = contract.wage / 160  (20 working days × 8 hours)
+                    "structure_id": structure.id,
+                    "name": "Overtime Pay",
+                    "code": "OT_PAY",
+                    "category": RuleCategory.ALLOWANCE,
+                    "sequence": 35,
+                    "computation_type": ComputationType.OVERTIME,
+                    "fixed_amount": 1.5,
+                    "is_active": True,
+                },
+                {
+                    # Leave Deduction: deducts salary for approved unpaid leave days.
+                    # Engine calculates: unpaid_leave_days * (contract.wage / 26)
+                    # 26 = standard working days per month.
+                    "structure_id": structure.id,
+                    "name": "Unpaid Leave Deduction",
+                    "code": "LEAVE_DED",
+                    "category": RuleCategory.DEDUCTION,
+                    "sequence": 55,
+                    "computation_type": ComputationType.LEAVE_DEDUCTION,
+                    "is_active": True,
+                },
+                {
                     "structure_id": structure.id,
                     "name": "Gross Wage",
                     "code": "GROSS",
                     "category": RuleCategory.GROSS,
                     "sequence": 40,
                     "computation_type": ComputationType.PYTHON_EXPRESSION,
-                    "formula": "BASIC + HRA + DA",
+                    "formula": "BASIC + HRA + DA + OT_PAY",
                     "is_active": True,
                 },
                 {
@@ -186,7 +211,7 @@ def seed_database():
                     "category": RuleCategory.NET,
                     "sequence": 100,
                     "computation_type": ComputationType.PYTHON_EXPRESSION,
-                    "formula": "GROSS - PF",
+                    "formula": "GROSS - PF - LEAVE_DED",
                     "is_active": True,
                 },
             ]
