@@ -9,8 +9,7 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "PeoplePay360: HR & Payroll"
     API_V1_STR: str = "/api/v1"
     
-    # Database connection string (defaults to local PostgreSQL, overridden by .env for SQLite fallback)
-    DATABASE_URL: str = "postgresql://postgres:password@localhost:5432/peoplepay360"
+    DATABASE_URL: str = "sqlite:///./peoplepay360.db"
     
     # JWT Authentication configuration
     SECRET_KEY: str = "super-secret-key-peoplepay360-change-in-production-2026"

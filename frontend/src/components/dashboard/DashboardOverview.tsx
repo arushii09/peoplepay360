@@ -18,16 +18,6 @@ import {
   X,
   Check
 } from "lucide-react";
-import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-  Legend
-} from "recharts";
 
 interface DashboardOverviewProps {
   onNavigate: (navId: string) => void;
@@ -206,35 +196,39 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
             </span>
           </div>
 
-          <div className="h-64 mt-4 w-full">
-            {mounted ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={PAYROLL_TREND_DATA} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E8F3E6" vertical={false} />
-                  <XAxis dataKey="month" stroke="#5C645C" fontSize={11} tickLine={false} />
-                  <YAxis stroke="#5C645C" fontSize={11} tickLine={false} unit="L" />
-                  <Tooltip
-                    formatter={(value: any) => [`₹${value} Lakhs`, ""]}
-                    contentStyle={{
-                      backgroundColor: "#FFFFFF",
-                      borderColor: "#CBD2C4",
-                      borderRadius: "8px",
-                      fontSize: "12px",
-                      color: "#1A1A1A",
-                    }}
-                  />
-                  <Legend
-                    wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }}
-                  />
-                  <Bar dataKey="gross" name="Gross Pay" fill="#0F2F1E" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="net" name="Net Disbursed" fill="#9FD067" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="h-full flex items-center justify-center text-xs text-[#5C645C]">
-                Loading trend visualization...
+          <div className="h-64 mt-4 w-full flex flex-col justify-between">
+            <div className="flex-1 flex items-end justify-between gap-4 pb-4 border-b border-[#E8F3E6]">
+              {PAYROLL_TREND_DATA.map((item) => (
+                <div key={item.month} className="flex-1 flex flex-col items-center h-full justify-end group">
+                  <div className="text-[10px] text-[#5C645C] opacity-0 group-hover:opacity-100 transition-opacity mb-1 font-mono">
+                    ₹{item.gross}L / ₹{item.net}L
+                  </div>
+                  <div className="w-full flex items-end justify-center gap-1.5 h-44">
+                    <div
+                      className="w-4 bg-[#0F2F1E] rounded-t transition-all hover:brightness-110"
+                      style={{ height: `${(item.gross / 25) * 100}%` }}
+                      title={`Gross: ₹${item.gross}L`}
+                    />
+                    <div
+                      className="w-4 bg-[#9FD067] rounded-t transition-all hover:brightness-110"
+                      style={{ height: `${(item.net / 25) * 100}%` }}
+                      title={`Net: ₹${item.net}L`}
+                    />
+                  </div>
+                  <span className="text-xs text-[#5C645C] mt-2 font-medium">{item.month}</span>
+                </div>
+              ))}
+            </div>
+            <div className="flex items-center justify-center gap-6 pt-3 text-xs text-[#5C645C]">
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-sm bg-[#0F2F1E]" />
+                <span>Gross Pay</span>
               </div>
-            )}
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-sm bg-[#9FD067]" />
+                <span>Net Disbursed</span>
+              </div>
+            </div>
           </div>
         </div>
 
