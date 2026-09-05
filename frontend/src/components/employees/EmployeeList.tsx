@@ -18,8 +18,8 @@ import {
   TrendingUp,
   Sparkles
 } from "lucide-react";
-import { Employee, WorkingSchedule } from "@/types/hr";
-import { AddEmployeeModal } from "./AddEmployeeModal";
+import { Employee, WorkingSchedule, Contract } from "@/types/hr";
+import { AddEmployeeModal } from "@/components/employees/AddEmployeeModal";
 
 interface EmployeeListProps {
   employees: Employee[];
@@ -67,7 +67,7 @@ export const EmployeeList: React.FC<EmployeeListProps> = ({
 
   // Key stats
   const totalCount = employees.length;
-  const activeContractsCount = employees.filter(e => e.contracts && e.contracts.some(c => c.status === "ACTIVE")).length;
+  const activeContractsCount = employees.filter(e => e.contracts && e.contracts.some((c: Contract) => c.status === "ACTIVE")).length;
   const onLeaveCount = employees.filter(e => e.status === "ON_LEAVE").length;
   const compliantCount = employees.filter(e => e.bank_account_no && e.tax_id).length;
 
@@ -159,9 +159,8 @@ export const EmployeeList: React.FC<EmployeeListProps> = ({
                 type="button"
                 suppressHydrationWarning
                 onClick={() => setViewMode("table")}
-                className={`p-1.5 rounded-lg transition ${
-                  viewMode === "table" ? "bg-white shadow-xs text-[#0F2F1E] font-semibold" : "text-slate-500 hover:text-slate-800"
-                }`}
+                className={`p-1.5 rounded-lg transition ${viewMode === "table" ? "bg-white shadow-xs text-[#0F2F1E] font-semibold" : "text-slate-500 hover:text-slate-800"
+                  }`}
                 title="Table View"
               >
                 <ListIcon className="w-4 h-4" />
@@ -170,9 +169,8 @@ export const EmployeeList: React.FC<EmployeeListProps> = ({
                 type="button"
                 suppressHydrationWarning
                 onClick={() => setViewMode("grid")}
-                className={`p-1.5 rounded-lg transition ${
-                  viewMode === "grid" ? "bg-white shadow-xs text-[#0F2F1E] font-semibold" : "text-slate-500 hover:text-slate-800"
-                }`}
+                className={`p-1.5 rounded-lg transition ${viewMode === "grid" ? "bg-white shadow-xs text-[#0F2F1E] font-semibold" : "text-slate-500 hover:text-slate-800"
+                  }`}
                 title="Grid Cards View"
               >
                 <LayoutGrid className="w-4 h-4" />
@@ -192,11 +190,10 @@ export const EmployeeList: React.FC<EmployeeListProps> = ({
               type="button"
               suppressHydrationWarning
               onClick={() => setSelectedDept(dept)}
-              className={`px-3 py-1 rounded-full text-xs transition cursor-pointer shrink-0 ${
-                selectedDept === dept
-                  ? "bg-[#0F2F1E] text-white font-semibold shadow-xs"
-                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-              }`}
+              className={`px-3 py-1 rounded-full text-xs transition cursor-pointer shrink-0 ${selectedDept === dept
+                ? "bg-[#0F2F1E] text-white font-semibold shadow-xs"
+                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                }`}
             >
               {dept}
             </button>
@@ -211,11 +208,10 @@ export const EmployeeList: React.FC<EmployeeListProps> = ({
               type="button"
               suppressHydrationWarning
               onClick={() => setSelectedStatus(st)}
-              className={`px-3 py-1 rounded-full text-xs transition cursor-pointer shrink-0 ${
-                selectedStatus === st
-                  ? "bg-[#0F2F1E] text-white font-semibold shadow-xs"
-                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-              }`}
+              className={`px-3 py-1 rounded-full text-xs transition cursor-pointer shrink-0 ${selectedStatus === st
+                ? "bg-[#0F2F1E] text-white font-semibold shadow-xs"
+                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                }`}
             >
               {st === "ALL" ? "All Status" : st === "ACTIVE" ? "Active" : "On Leave"}
             </button>
@@ -265,7 +261,7 @@ export const EmployeeList: React.FC<EmployeeListProps> = ({
                   </tr>
                 ) : (
                   filteredEmployees.map(emp => {
-                    const activeContract = emp.contracts?.find(c => c.status === "ACTIVE");
+                    const activeContract = emp.contracts?.find((c: Contract) => c.status === "ACTIVE");
                     const isCompliant = Boolean(emp.bank_account_no && emp.tax_id);
 
                     return (
@@ -321,16 +317,14 @@ export const EmployeeList: React.FC<EmployeeListProps> = ({
                         {/* Status Badge */}
                         <td className="py-3.5 px-4">
                           <span
-                            className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${
-                              emp.status === "ACTIVE"
-                                ? "bg-emerald-50 text-emerald-800 border border-emerald-200/60"
-                                : "bg-amber-50 text-amber-800 border border-amber-200/60"
-                            }`}
+                            className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${emp.status === "ACTIVE"
+                              ? "bg-emerald-50 text-emerald-800 border border-emerald-200/60"
+                              : "bg-amber-50 text-amber-800 border border-amber-200/60"
+                              }`}
                           >
                             <span
-                              className={`w-1.5 h-1.5 rounded-full ${
-                                emp.status === "ACTIVE" ? "bg-emerald-600" : "bg-amber-600"
-                              }`}
+                              className={`w-1.5 h-1.5 rounded-full ${emp.status === "ACTIVE" ? "bg-emerald-600" : "bg-amber-600"
+                                }`}
                             />
                             {emp.status === "ACTIVE" ? "Active" : "On Leave"}
                           </span>
@@ -371,7 +365,7 @@ export const EmployeeList: React.FC<EmployeeListProps> = ({
       {viewMode === "grid" && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredEmployees.map(emp => {
-            const activeContract = emp.contracts?.find(c => c.status === "ACTIVE");
+            const activeContract = emp.contracts?.find((c: Contract) => c.status === "ACTIVE");
             const isCompliant = Boolean(emp.bank_account_no && emp.tax_id);
 
             return (
@@ -401,11 +395,10 @@ export const EmployeeList: React.FC<EmployeeListProps> = ({
                       </div>
                     </div>
                     <span
-                      className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
-                        emp.status === "ACTIVE"
-                          ? "bg-emerald-50 text-emerald-800 border border-emerald-200/60"
-                          : "bg-amber-50 text-amber-800 border border-amber-200/60"
-                      }`}
+                      className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${emp.status === "ACTIVE"
+                        ? "bg-emerald-50 text-emerald-800 border border-emerald-200/60"
+                        : "bg-amber-50 text-amber-800 border border-amber-200/60"
+                        }`}
                     >
                       {emp.status === "ACTIVE" ? "Active" : "On Leave"}
                     </span>

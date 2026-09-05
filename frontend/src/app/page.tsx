@@ -17,12 +17,11 @@ import { LegalModal } from "@/components/landing/legal-modal";
 import { AuthView, UserSession, UserRole } from "@/components/auth/AuthView";
 import { AppShell } from "@/components/layout/AppShell";
 import { DashboardOverview } from "@/components/dashboard/DashboardOverview";
-import { EmployeeList } from "@/components/employees/EmployeeList";
-import { EmployeeProfile } from "@/components/employees/EmployeeProfile";
+import { EmployeeList, EmployeeProfile } from "@/components/employees";
 import { EmployeePortal } from "@/components/employee-portal/EmployeePortal";
 import { AdminRolesPanel } from "@/components/admin/AdminRolesPanel";
-import { initialEmployees, initialSchedules } from "@/lib/mock-data";
-import { Employee } from "@/types/hr";
+import { initialEmployees, initialSchedules } from "@/lib";
+import type { Employee } from "@/types/hr";
 import {
   FileText,
   Clock,

@@ -13,6 +13,7 @@
   --color-border: #E8F3E6;
 }
 
+/* Tailwind CSS v4 Theme Tokens */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
