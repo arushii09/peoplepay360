@@ -3,7 +3,6 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1.api import api_router
 from app.core.config import settings
-from app.api.routes import auth, salary
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -14,8 +13,6 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
-# Allow the Next.js frontend (running on localhost:3000) to talk to this API.
-# In production, replace "*" with the actual frontend domain.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -24,10 +21,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include unified API Router under /api/v1
+# Unified API Router under /api/v1 (Auth, Employees, Contracts, Salary, Attendance, Time-off)
 app.include_router(api_router, prefix=settings.API_V1_STR)
-app.include_router(auth.router, prefix=f"{settings.API_V1_STR}/auth", tags=["Authentication"])
-app.include_router(salary.router, prefix=f"{settings.API_V1_STR}", tags=["Salary"])
+
 
 
 @app.get("/health", tags=["Health"])

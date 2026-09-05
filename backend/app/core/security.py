@@ -2,12 +2,9 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Optional, Union
 import bcrypt
 from jose import jwt
-from passlib.context import CryptContext
 
 from app.core.config import settings
 
-# Passlib CryptContext instance retained for framework compatibility
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 def get_password_hash(password: str) -> str:

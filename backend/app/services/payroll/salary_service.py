@@ -66,7 +66,6 @@ def get_all_rules(db: Session, structure_id: Optional[int] = None) -> List[Salar
 
 
 def create_rule(db: Session, data: SalaryRuleCreate) -> SalaryRule:
-    # Step 1: Verify the target structure exists before creating a rule for it.
     structure = db.query(SalaryStructure).filter(SalaryStructure.id == data.structure_id).first()
     if not structure:
         raise HTTPException(
@@ -74,9 +73,7 @@ def create_rule(db: Session, data: SalaryRuleCreate) -> SalaryRule:
             detail=f"Salary structure with id {data.structure_id} not found.",
         )
 
-    # Step 2: Rule codes must be unique within the same structure.
-    # Two rules with code "BASIC" in the same structure would cause the engine
-    # to produce undefined results when a formula references "BASIC".
+    # Rule code must be unique within the structure
     duplicate = db.query(SalaryRule).filter(
         SalaryRule.structure_id == data.structure_id,
         SalaryRule.code == data.code,
@@ -87,18 +84,7 @@ def create_rule(db: Session, data: SalaryRuleCreate) -> SalaryRule:
             detail=f"Rule code '{data.code}' already exists in structure '{structure.code}'. Codes must be unique within a structure.",
         )
 
-    rule_data = data.model_dump()
-
-    # Convert Decimal → float for DB storage.
-    # The DB column is Numeric(12, 4) which stores exact values; float is only
-    # used as the Python bridge type at the ORM boundary.
-    # The payroll engine will convert back to Decimal when it reads these values.
-    if rule_data.get("fixed_amount") is not None:
-        rule_data["fixed_amount"] = float(rule_data["fixed_amount"])
-    if rule_data.get("percentage_value") is not None:
-        rule_data["percentage_value"] = float(rule_data["percentage_value"])
-
-    rule = SalaryRule(**rule_data)
+    rule = SalaryRule(**data.model_dump())
     db.add(rule)
     db.commit()
     db.refresh(rule)

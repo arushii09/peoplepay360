@@ -1,6 +1,6 @@
 from datetime import date as pydate, datetime
 from typing import Any, Dict, List, Optional
-from pydantic import BaseModel, ConfigDict, EmailStr
+from pydantic import BaseModel, ConfigDict
 
 from app.models.models import (
     AttendanceStatus,
@@ -18,7 +18,7 @@ from app.models.models import (
 # ==========================================
 
 class UserBase(BaseModel):
-    email: EmailStr
+    email: str
     full_name: str
     role: UserRole = UserRole.EMPLOYEE
     is_active: bool = True
@@ -40,8 +40,6 @@ class Token(BaseModel):
     token_type: str = "bearer"
 
 
-class TokenData(BaseModel):
-    email: Optional[str] = None
 
 
 # ==========================================
@@ -79,6 +77,14 @@ class LeaveAllocationResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class TimeOffRequestCreate(BaseModel):
+    employee_id: int
+    time_off_type_id: int
+    start_date: pydate
+    end_date: pydate
+    reason: Optional[str] = None
+
+
 class TimeOffRequestResponse(BaseModel):
     id: int
     employee_id: int
@@ -92,9 +98,39 @@ class TimeOffRequestResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class TimeOffPayrollSummary(BaseModel):
+    employee_id: int
+    period_start: pydate
+    period_end: pydate
+    total_approved_days: float
+    paid_leave_days: float
+    unpaid_leave_days: float
+    approved_requests_count: int
+
+
 # ==========================================
 # 3. ATTENDANCE & CONTRACT SCHEMAS
 # ==========================================
+
+class AttendanceCreate(BaseModel):
+    employee_id: int
+    date: pydate
+    check_in: datetime
+    check_out: Optional[datetime] = None
+    worked_hours: Optional[float] = None
+    overtime_hours: Optional[float] = None
+    status: Optional[AttendanceStatus] = None
+    notes: Optional[str] = None
+
+
+class AttendanceUpdate(BaseModel):
+    check_in: Optional[datetime] = None
+    check_out: Optional[datetime] = None
+    worked_hours: Optional[float] = None
+    overtime_hours: Optional[float] = None
+    status: Optional[AttendanceStatus] = None
+    notes: Optional[str] = None
+
 
 class AttendanceResponse(BaseModel):
     id: int
@@ -108,6 +144,16 @@ class AttendanceResponse(BaseModel):
     notes: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class AttendancePayrollSummary(BaseModel):
+    employee_id: int
+    period_start: pydate
+    period_end: pydate
+    total_worked_hours: float
+    total_overtime_hours: float
+    attendance_days_count: int
+    warnings: List[str] = []
 
 
 class ContractCreate(BaseModel):
@@ -152,7 +198,7 @@ ContractResponse = ContractOut
 class EmployeeBase(BaseModel):
     first_name: str
     last_name: str
-    email: EmailStr
+    email: str
     phone: Optional[str] = None
     department: Optional[str] = None
     job_position: Optional[str] = None
@@ -173,7 +219,7 @@ class EmployeeCreate(EmployeeBase):
     user_id: Optional[int] = None
     first_name: str
     last_name: str
-    email: EmailStr
+    email: str
     department: str
     job_position: str
 
@@ -185,7 +231,7 @@ class EmployeeUpdate(BaseModel):
     """
     first_name: Optional[str] = None
     last_name: Optional[str] = None
-    email: Optional[EmailStr] = None
+    email: Optional[str] = None
     phone: Optional[str] = None
     department: Optional[str] = None
     job_position: Optional[str] = None
@@ -223,81 +269,4 @@ class SmartCountsOut(BaseModel):
 SmartBadgeCountsOut = SmartCountsOut
 
 
-# ==========================================
-# 5. SALARY STRUCTURE & PAYROLL SCHEMAS
-# ==========================================
 
-class SalaryRuleResponse(BaseModel):
-    id: int
-    structure_id: int
-    name: str
-    code: str
-    category: RuleCategory
-    sequence: int
-    computation_type: ComputationType
-    fixed_amount: Optional[float] = None
-    percentage_value: Optional[float] = None
-    formula: Optional[str] = None
-    is_active: bool
-
-    model_config = ConfigDict(from_attributes=True)
-
-
-class SalaryStructureResponse(BaseModel):
-    id: int
-    name: str
-    code: str
-    description: Optional[str] = None
-    is_active: bool
-    rules: List[SalaryRuleResponse] = []
-
-    model_config = ConfigDict(from_attributes=True)
-
-
-class PayslipLineResponse(BaseModel):
-    id: int
-    rule_code: str
-    rule_name: str
-    category: RuleCategory
-    sequence: int
-    rate: float
-    amount: float
-    calculation_trace: Optional[str] = None
-
-    model_config = ConfigDict(from_attributes=True)
-
-
-class PayslipResponse(BaseModel):
-    id: int
-    payrun_id: int
-    employee_id: int
-    contract_id: int
-    status: PayrunStatus
-    worked_days: float
-    total_hours: float
-    overtime_hours: float
-    unpaid_leave_days: float
-    basic_wage: float
-    gross_wage: float
-    total_deductions: float
-    net_wage: float
-    warnings_json: Optional[Dict[str, Any]] = None
-    lines: List[PayslipLineResponse] = []
-
-    model_config = ConfigDict(from_attributes=True)
-
-
-class PayrunResponse(BaseModel):
-    id: int
-    name: str
-    period_start: pydate
-    period_end: pydate
-    salary_structure_id: int
-    status: PayrunStatus
-    total_gross: float
-    total_deductions: float
-    total_net: float
-    created_at: datetime
-    payslips: List[PayslipResponse] = []
-
-    model_config = ConfigDict(from_attributes=True)
