@@ -1,26 +1,62 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #F6F7F2;
+  --foreground: #1A1A1A;
+  --color-primary: #0F2F1E;
+  --color-primary-dark: #1F4D32;
+  --color-accent: #2E6845;
+  --color-accent-light: #9FD067;
+  --color-surface: #E7E9E1;
+  --color-text-secondary: #5C645C;
+  --color-card: #FFFFFF;
+  --color-border: #E8F3E6;
 }
 
+/* Tailwind CSS v4 Theme Tokens */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-sans: var(--font-dm-sans), system-ui, -apple-system, sans-serif;
+  --font-serif: var(--font-fraunces), Georgia, serif;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: #F6F7F2;
+  color: #1A1A1A;
+  font-family: var(--font-dm-sans), system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom scrollbar matching Solarify palette */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F6F7F2;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #CBD2C4;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #2E6845;
+}
+
+/* Print view for payslip generator */
+@media print {
+  body {
+    background-color: #FFFFFF;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
 }
