@@ -157,6 +157,7 @@ def reject_time_off_request(
     return leave_req
 
 
+
 def get_time_off_payroll_summary(
     db: Session,
     employee_id: int,

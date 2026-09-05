@@ -16,14 +16,7 @@ def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db),
 ):
-    """
-    Login with email + password. Returns a JWT Bearer token.
     
-    Use the token in the Authorization header for all other requests:
-    Authorization: Bearer <token>
-    
-    The form uses 'username' field (OAuth2 standard) — send the user's email there.
-    """
     user = db.query(User).filter(User.email == form_data.username).first()
 
     if not user or not verify_password(form_data.password, user.hashed_password):
@@ -45,5 +38,5 @@ def login(
 
 @router.get("/me", response_model=UserOut)
 def get_current_user_info(current_user: User = Depends(get_current_user)):
-    """Returns the currently logged-in user's profile."""
+    
     return current_user

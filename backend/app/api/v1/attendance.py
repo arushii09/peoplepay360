@@ -28,8 +28,8 @@ def list_attendances(
     if current_user.role==UserRole.EMPLOYEE:
         if not current_user.employee:
             raise HTTPException(
-                status_code=status.HTTP_400v_BAD_REQUEST,
-                detail="User account is not linked to an emplopyee profile",
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="User account is not linked to an employee profile",
             )
         employee_id=current_user.employee.id
 
@@ -50,7 +50,7 @@ def create_attendance(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Record daily employee attendance."""
+    
     return attendance_service.create_attendance(db=db, payload=payload)
 
 
@@ -60,7 +60,7 @@ def get_attendance(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Retrieve attendance record by ID."""
+    
     return attendance_service.get_attendance_by_id(db=db, attendance_id=id)
 
 
@@ -71,6 +71,6 @@ def update_attendance(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles([UserRole.HR_MANAGER, UserRole.ADMIN, UserRole.HR_PAYROLL_MANAGER])),
 ):
-    """Update or manually correct an attendance record."""
+   
     return attendance_service.update_attendance(db=db, attendance_id=id, payload=payload)
 

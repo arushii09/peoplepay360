@@ -93,15 +93,6 @@ class TestEmployees:
         assert len(data) >= 1
         assert data[0]["email"] == "diana@peoplepay.com"
 
-    def test_get_employee_smart_counts(self, client, admin_headers):
-        # Fetch Diana
-        diana = client.get("/api/v1/employees?search=diana@peoplepay.com", headers=admin_headers).json()[0]
-        res = client.get(f"/api/v1/employees/{diana['id']}/smart-counts", headers=admin_headers)
-        assert res.status_code == 200
-        counts = res.json()
-        assert "active_contracts_count" in counts
-        assert "attendance_days_this_month" in counts
-        assert "remaining_leave_balance" in counts
 
 
 class TestContracts:

@@ -38,7 +38,7 @@ def list_salary_structures(
     db: Session = Depends(get_db),
     _: User = Depends(require_roles(PAYROLL_READ_ROLES)),
 ):
-    """List all salary structures. Used by FE-2 to populate the structure selector."""
+    """List all available salary structures."""
     return salary_service.get_all_structures(db)
 
 
@@ -48,7 +48,7 @@ def get_salary_structure(
     db: Session = Depends(get_db),
     _: User = Depends(require_roles(PAYROLL_READ_ROLES)),
 ):
-    """Get a single salary structure with all its rules. Useful for the salary config UI."""
+    """Retrieve a salary structure and its ordered calculation rules."""
     structure = salary_service.get_structure_by_id(db, structure_id)
     return structure
 

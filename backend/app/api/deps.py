@@ -18,10 +18,7 @@ def get_current_user(
     db: Session = Depends(get_db),
     token: str = Depends(oauth2_scheme)
 ) -> User:
-    """
-    FastAPI dependency validating the JWT token and returning the current authenticated active user.
-    Raises HTTP 401 if token invalid/expired, or HTTP 400 if user account disabled.
-    """
+    
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate authentication credentials",

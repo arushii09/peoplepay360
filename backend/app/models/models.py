@@ -70,10 +70,10 @@ class ComputationType(str, PyEnum):
 
 
 class PayrunStatus(str, PyEnum):
-    DRAFT = "DRAFT"
-    COMPUTED = "COMPUTED"
-    VALIDATED = "VALIDATED"
-    PAID = "PAID"
+    DRAFT = "Draft"
+    CALCULATED = "Calculated"
+    VALIDATED = "Validated"
+    PAID = "Paid"
 
 
 
@@ -285,6 +285,10 @@ class Contract(Base):
     salary_structure_id: Mapped[int] = mapped_column(ForeignKey("salary_structures.id"), nullable=False)
     status: Mapped[ContractStatus] = mapped_column(Enum(ContractStatus), default=ContractStatus.DRAFT, nullable=False)
 
+    @property
+    def salary(self) -> float:
+        return self.wage
+
     employee: Mapped["Employee"] = relationship("Employee", back_populates="contracts")
     salary_structure: Mapped["SalaryStructure"] = relationship("SalaryStructure", back_populates="contracts")
     payslips: Mapped[List["Payslip"]] = relationship("Payslip", back_populates="contract")
@@ -297,31 +301,34 @@ class Payrun(Base):
     __tablename__ = "payruns"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     period_start: Mapped[pydate] = mapped_column(Date, nullable=False)
     period_end: Mapped[pydate] = mapped_column(Date, nullable=False)
-    salary_structure_id: Mapped[int] = mapped_column(ForeignKey("salary_structures.id"), nullable=False)
+    salary_structure_id: Mapped[Optional[int]] = mapped_column(ForeignKey("salary_structures.id"), nullable=True)
     status: Mapped[PayrunStatus] = mapped_column(Enum(PayrunStatus), default=PayrunStatus.DRAFT, nullable=False)
     total_gross: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
     total_deductions: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
     total_net: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
-    salary_structure: Mapped["SalaryStructure"] = relationship("SalaryStructure", back_populates="payruns")
+    salary_structure: Mapped[Optional["SalaryStructure"]] = relationship("SalaryStructure", back_populates="payruns")
     payslips: Mapped[List["Payslip"]] = relationship("Payslip", back_populates="payrun", cascade="all, delete-orphan")
 
 
 class Payslip(Base):
-    """
-    Individual payslip generated for an employee
-    """
     __tablename__ = "payslips"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     payrun_id: Mapped[int] = mapped_column(ForeignKey("payruns.id"), nullable=False)
     employee_id: Mapped[int] = mapped_column(ForeignKey("employees.id"), nullable=False)
     contract_id: Mapped[int] = mapped_column(ForeignKey("contracts.id"), nullable=False)
-    status: Mapped[PayrunStatus] = mapped_column(Enum(PayrunStatus), default=PayrunStatus.DRAFT, nullable=False)
+    gross_salary: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
+    leave_deduction: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
+    net_salary: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
+    status: Mapped[str] = mapped_column(String(50), default="Draft", nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
     worked_days: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
     total_hours: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
     overtime_hours: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
@@ -331,6 +338,12 @@ class Payslip(Base):
     total_deductions: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
     net_wage: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
     warnings_json: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
+
+    @property
+    def employee_name(self) -> str:
+        if self.employee:
+            return f"{self.employee.first_name} {self.employee.last_name}".strip()
+        return ""
 
     payrun: Mapped["Payrun"] = relationship("Payrun", back_populates="payslips")
     employee: Mapped["Employee"] = relationship("Employee", back_populates="payslips")

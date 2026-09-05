@@ -8,11 +8,7 @@ from app.core.config import settings
 
 
 def get_password_hash(password: str) -> str:
-    """
-    Hashes plain passwords using bcrypt.
-    Bcrypt automatically generates a random salt and applies adaptive work factor
-    to protect passwords against rainbow table and brute-force attacks.
-    """
+    
     pwd_bytes = password.encode("utf-8")
     salt = bcrypt.gensalt()
     hashed = bcrypt.hashpw(pwd_bytes, salt)
@@ -20,9 +16,7 @@ def get_password_hash(password: str) -> str:
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """
-    Verifies a plain-text password against a stored bcrypt hash in constant time.
-    """
+    
     if not plain_password or not hashed_password:
         return False
     try:
@@ -35,15 +29,13 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 
 def create_access_token(subject: Union[str, Any], expires_delta: Optional[timedelta] = None) -> str:
-    """
-    Encodes a signed JWT access token containing identity claims (sub) and expiration timestamp (exp).
-    """
+    
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
     else:
         expire = datetime.now(timezone.utc) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     
-    # Payload includes subject (user email/id) and expiration
+   
     payload = {"exp": expire, "sub": str(subject)}
     encoded_jwt = jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
     return encoded_jwt

@@ -13,9 +13,7 @@ from app.models.models import (
 )
 
 
-# ==========================================
-# 1. USER & SECURITY SCHEMAS
-# ==========================================
+
 
 class UserBase(BaseModel):
     email: str
@@ -42,9 +40,7 @@ class Token(BaseModel):
 
 
 
-# ==========================================
-# 2. WORKING SCHEDULE & TIME OFF SCHEMAS
-# ==========================================
+
 
 class WorkingScheduleResponse(BaseModel):
     id: int
@@ -108,9 +104,6 @@ class TimeOffPayrollSummary(BaseModel):
     approved_requests_count: int
 
 
-# ==========================================
-# 3. ATTENDANCE & CONTRACT SCHEMAS
-# ==========================================
 
 class AttendanceCreate(BaseModel):
     employee_id: int
@@ -191,9 +184,7 @@ class ContractOut(BaseModel):
 ContractResponse = ContractOut
 
 
-# ==========================================
-# 4. EMPLOYEE SCHEMAS (MODULE 3)
-# ==========================================
+
 
 class EmployeeBase(BaseModel):
     first_name: str
@@ -212,10 +203,7 @@ class EmployeeBase(BaseModel):
 
 
 class EmployeeCreate(EmployeeBase):
-    """
-    Schema for creating a new Employee record.
-    Required fields: first_name, last_name, email, department, job_position.
-    """
+   
     user_id: Optional[int] = None
     first_name: str
     last_name: str
@@ -225,10 +213,7 @@ class EmployeeCreate(EmployeeBase):
 
 
 class EmployeeUpdate(BaseModel):
-    """
-    Schema for updating existing Employee profile information.
-    All fields are optional to support partial updates via PUT/PATCH.
-    """
+    
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     email: Optional[str] = None
@@ -245,9 +230,7 @@ class EmployeeUpdate(BaseModel):
 
 
 class EmployeeOut(EmployeeBase):
-    """
-    Output representation of Employee record.
-    """
+    
     id: int
     user_id: Optional[int] = None
 
@@ -258,9 +241,7 @@ EmployeeResponse = EmployeeOut
 
 
 class SmartCountsOut(BaseModel):
-    """
-    Live summary counter counts for employee UI header badges.
-    """
+    
     active_contracts_count: int
     attendance_days_this_month: int
     remaining_leave_balance: float
